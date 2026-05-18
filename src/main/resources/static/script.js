@@ -132,6 +132,11 @@ apiKeyInput.addEventListener('input', () => {
   if (key) {
     localStorage.setItem('cb-apikey', key);
     flashKeySaved();
+    // attempt to persist to backend (BYOK prep) — best-effort, ignore failures
+    try {
+      authFetch('/api/v1/user/apikey', { method: 'POST', body: JSON.stringify({ key }) })
+        .catch(() => {});
+    } catch (e) { /* ignore */ }
   } else {
     localStorage.removeItem('cb-apikey');
     keySaveIndicator.classList.remove('visible');
@@ -170,23 +175,17 @@ const DENSITY_INSTRUCTION = {
 };
 
 function buildPrompt(lang, code, style, den) {
-  return `You are an expert ${LANG_LABEL[lang]} developer and technical writer.
-
-Your task: add helpful comments to the following ${LANG_LABEL[lang]} code.
-
-Comment style: ${STYLE_INSTRUCTION[style]}
-Comment density: ${DENSITY_INSTRUCTION[den]}
-
-Rules:
-- Return ONLY the commented code, nothing else.
-- Do not change the logic, structure, or formatting of the original code.
-- Do not add markdown fences or any explanation outside the code.
-- Keep comments concise, accurate, and developer-focused.
-
-Code to comment:
-\`\`\`${lang}
-${code}
-\`\`\``;
+  return `You are an expert ${LANG_LABEL[lang]} developer and technical writer.\n\n`
+    + `Your task: add helpful comments to the following ${LANG_LABEL[lang]} code.\n\n`
+    + `Comment style: ${STYLE_INSTRUCTION[style]}\n`
+    + `Comment density: ${DENSITY_INSTRUCTION[den]}\n\n`
+    + `Rules:\n`
+    + `- Return ONLY the commented code, nothing else.\n`
+    + `- Do not change the logic, structure, or formatting of the original code.\n`
+    + `- Do not add markdown fences or any explanation outside the code.\n`
+    + `- Keep comments concise, accurate, and developer-focused.\n\n`
+    + `Code to comment:\n``` ${lang}\n`
+    + `${code}\n````;
 }
 
 /* ============================================================
@@ -209,11 +208,8 @@ async function generateComments() {
   };
 
   try {
-    const res = await fetch('/api/v1/comments/generate', {
+    const res = await authFetch('/api/v1/comments/generate', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify(payload)
     });
 
@@ -325,9 +321,6 @@ function showToast(msg, isError = false) {
   toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
 }
 
-/* ============================================================
-   KEYBOARD SHORTCUT: Cmd/Ctrl + Enter = Generate
-============================================================ */
 document.addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     e.preventDefault();
@@ -335,7 +328,4 @@ document.addEventListener('keydown', e => {
   }
 });
 
-/* ============================================================
-   INITIAL STATE
-============================================================ */
 charCount.textContent = '0 lines';

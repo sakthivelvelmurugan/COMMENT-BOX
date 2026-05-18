@@ -104,6 +104,7 @@ public class CommentService {
         }
     }
 
+    @SuppressWarnings("unused")
     private static class Usage {
         private int total_tokens;
 

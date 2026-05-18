@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Register — CommentBox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--text:#e6eef8;--muted:#97a6bf;--accent:#7c5cff}
+    [data-theme="light"]{--bg:#f6f8fb;--card:#ffffff;--text:#0b1220;--muted:#526179;--accent:#7c5cff}
+    html,body{height:100%;margin:0;font-family:'Sora',system-ui,Arial}
+    body{background:var(--bg);display:grid;place-items:center;padding:24px}
+    .card{width:380px;background:var(--card);color:var(--text);border-radius:12px;padding:24px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
+    h1{margin:0 0 12px;font-size:20px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);margin-bottom:12px;background:transparent;color:var(--text)}
+    button{width:100%;padding:10px 12px;border-radius:10px;border:0;background:var(--accent);color:white;font-weight:600}
+    .link{display:block;text-align:center;margin-top:12px;color:var(--muted);font-size:14px}
+    .error{color:#ffb4b4;background:#3b0f0f;padding:8px;border-radius:8px;margin-bottom:12px;display:none}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Create an account</h1>
+    <div id="error" class="error"></div>
+    <form id="regForm">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required />
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required minlength="8" />
+      <label for="confirm">Confirm password</label>
+      <input id="confirm" name="confirm" type="password" required minlength="8" />
+      <button type="submit">Register</button>
+    </form>
+    <a class="link" href="/login.html">Already have an account? Sign in</a>
+  </div>
+
+  <script src="/auth.js"></script>
+  <script>
+    const form = document.getElementById('regForm');
+    const errorEl = document.getElementById('error');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      const email = form.email.value.trim();
+      const password = form.password.value;
+      const confirm = form.confirm.value;
+      if (password !== confirm) {
+        errorEl.textContent = 'Passwords do not match';
+        errorEl.style.display = 'block';
+        return;
+      }
+      try {
+        const res = await fetch('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Registration failed');
+        localStorage.setItem('cb-token', data.token);
+        window.location.href = '/index.html';
+      } catch (err) {
+        errorEl.textContent = err.message || 'Registration failed';
+        errorEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

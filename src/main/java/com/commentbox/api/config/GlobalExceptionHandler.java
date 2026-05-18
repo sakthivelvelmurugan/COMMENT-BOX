@@ -2,7 +2,6 @@ package com.commentbox.api.config;
 
 import com.commentbox.api.util.ApiException;
 import com.commentbox.api.util.ErrorResponse;
-import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
