@@ -117,45 +117,93 @@ clearBtn.addEventListener('click', () => {
 });
 
 /* ============================================================
-   API KEY MANAGEMENT
+   API KEY MANAGEMENT (server-backed)
+   - on load: GET /api/v1/keys/openrouter
+   - save: POST /api/v1/keys
+   - delete: DELETE /api/v1/keys/openrouter
 ============================================================ */
-function loadStoredKey() {
-  const stored = localStorage.getItem('cb-apikey');
-  if (stored) {
-    apiKeyInput.value = stored;
-    flashKeySaved();
+
+const apikeyRow = document.querySelector('.apikey-row');
+const apikeyInner = document.querySelector('.apikey-inner');
+
+async function fetchKeyInfo() {
+  try {
+    const res = await authFetch('/api/v1/keys/openrouter');
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
   }
 }
 
-apiKeyInput.addEventListener('input', () => {
+async function saveKey() {
   const key = apiKeyInput.value.trim();
-  if (key) {
-    localStorage.setItem('cb-apikey', key);
-    flashKeySaved();
-    // attempt to persist to backend (BYOK prep) — best-effort, ignore failures
-    try {
-      authFetch('/api/v1/user/apikey', { method: 'POST', body: JSON.stringify({ key }) })
-        .catch(() => {});
-    } catch (e) { /* ignore */ }
-  } else {
-    localStorage.removeItem('cb-apikey');
-    keySaveIndicator.classList.remove('visible');
+  if (!key) { showToast('Enter an API key first', true); return; }
+  try {
+    const res = await authFetch('/api/v1/keys', {
+      method: 'POST',
+      body: JSON.stringify({ provider: 'openrouter', apiKey: key })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Save failed');
+    renderKeyState(data);
+    showToast('API key saved');
+  } catch (err) {
+    showToast(err.message || 'Failed to save key', true);
   }
-});
-
-function flashKeySaved() {
-  keySaveIndicator.classList.add('visible');
-  setTimeout(() => keySaveIndicator.classList.remove('visible'), 2000);
 }
 
-toggleKey.addEventListener('click', () => {
-  const isPassword = apiKeyInput.type === 'password';
-  apiKeyInput.type = isPassword ? 'text' : 'password';
-  toggleKey.querySelector('.eye-show').style.display = isPassword ? 'none' : '';
-  toggleKey.querySelector('.eye-hide').style.display = isPassword ? '' : 'none';
-});
+async function deleteKey() {
+  try {
+    const res = await authFetch('/api/v1/keys/openrouter', { method: 'DELETE' });
+    if (res.status === 204) {
+      renderKeyState({ hasKey: false, provider: 'openrouter' });
+      showToast('API key removed');
+    } else {
+      const data = await res.json();
+      throw new Error(data.message || 'Delete failed');
+    }
+  } catch (err) {
+    showToast(err.message || 'Failed to delete key', true);
+  }
+}
 
-loadStoredKey();
+function renderKeyState(data) {
+  const wrap = document.querySelector('.apikey-field-wrap');
+  if (!wrap) return;
+  // clear current contents
+  wrap.innerHTML = '';
+  if (data && data.hasKey) {
+    const badge = document.createElement('div');
+    badge.className = 'key-badge';
+    badge.textContent = data.keyHint || '••••';
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn-ghost';
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', deleteKey);
+    wrap.appendChild(badge);
+    wrap.appendChild(removeBtn);
+  } else {
+    const input = document.createElement('input');
+    input.type = 'password';
+    input.id = 'apiKeyInput';
+    input.className = 'apikey-input';
+    input.placeholder = 'sk-or-v1-••••••••';
+    input.autocomplete = 'off';
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn-primary';
+    saveBtn.textContent = 'Save';
+    saveBtn.addEventListener('click', saveKey);
+    wrap.appendChild(input);
+    wrap.appendChild(saveBtn);
+  }
+}
+
+// Initial load: query server for stored key
+(async () => {
+  const info = await fetchKeyInfo();
+  if (info) renderKeyState(info);
+})();
 
 /* ============================================================
    PROMPT BUILDER

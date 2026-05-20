@@ -45,10 +45,10 @@ public class JwtUtil {
 
     public String extractEmail(String token) {
         try {
-            Claims claims = Jwts.parser()
+            JwtParser parser = Jwts.parserBuilder()
                     .setSigningKey(signingKey)
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .build();
+            Claims claims = parser.parseClaimsJws(token).getBody();
             return claims.getSubject();
         } catch (JwtException ex) {
             return null;
@@ -57,10 +57,10 @@ public class JwtUtil {
 
     public boolean isTokenValid(String token, org.springframework.security.core.userdetails.UserDetails user) {
         try {
-            Claims claims = Jwts.parser()
+            JwtParser parser = Jwts.parserBuilder()
                     .setSigningKey(signingKey)
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .build();
+            Claims claims = parser.parseClaimsJws(token).getBody();
             String email = claims.getSubject();
             Date exp = claims.getExpiration();
             return email != null && email.equals(user.getUsername()) && exp != null && exp.after(new Date());

@@ -13,6 +13,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.util.List;
 import java.util.Map;
+import com.commentbox.api.service.ApiKeyService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 @RequiredArgsConstructor
@@ -21,16 +23,21 @@ public class CommentService {
 
     private final PromptBuilder promptBuilder;
     private final WebClient openRouterWebClient;
+    private final ApiKeyService apiKeyService;
 
     @Value("${openrouter.model}")
     private String model;
 
     public CommentResponse generateComment(CommentRequest request) {
         String prompt = promptBuilder.buildPrompt(request.getLanguage(), request.getStyle(), request.getDensity(), request.getCode());
-
         OpenRouterResponse response;
         try {
+            // Resolve API key for the current user (openrouter provider)
+            String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            String apiKey = apiKeyService.resolveKey(userEmail, "openrouter");
+
             response = openRouterWebClient.post()
+                .headers(h -> h.setBearerAuth(apiKey))
                 .bodyValue(Map.of(
                     "model", model,
                     "max_tokens", 4096,
@@ -42,6 +49,9 @@ public class CommentService {
         } catch (WebClientResponseException ex) {
             log.error("OpenRouter API error", ex);
             throw new ApiException("OpenRouter API error: " + ex.getResponseBodyAsString(), ex);
+        } catch (ApiException ex) {
+            // propagate our ApiException as-is
+            throw ex;
         } catch (Exception ex) {
             log.error("Unexpected error calling OpenRouter", ex);
             throw new ApiException("Failed to generate comments", ex);
