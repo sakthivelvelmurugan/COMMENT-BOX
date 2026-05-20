@@ -377,3 +377,41 @@ document.addEventListener('keydown', e => {
 });
 
 charCount.textContent = '0 lines';
+
+// Restore editor from history if sessionStorage contains cb-restore
+function restoreFromHistory() {
+  try {
+    const raw = sessionStorage.getItem('cb-restore');
+    if (!raw) return false;
+    const obj = JSON.parse(raw);
+    if (!obj) return false;
+    // populate code
+    if (obj.inputCode) {
+      codeInput.value = obj.inputCode;
+      codeInput.dispatchEvent(new Event('input'));
+    }
+    // set language tab
+    if (obj.language) {
+      const tab = Array.from(document.querySelectorAll('.lang-tab')).find(t => t.dataset.lang === obj.language);
+      if (tab) tab.click();
+    }
+    // set style and density
+    if (obj.style) commentStyle.value = obj.style;
+    if (obj.density) density.value = obj.density;
+    // populate output
+    if (obj.outputCode) {
+      displayOutput(obj.outputCode);
+    }
+    sessionStorage.removeItem('cb-restore');
+    showToast('Restored from history');
+    return true;
+  } catch (e) {
+    console.error('restoreFromHistory', e);
+    return false;
+  }
+}
+
+// attempt restore on load
+document.addEventListener('DOMContentLoaded', () => {
+  restoreFromHistory();
+});

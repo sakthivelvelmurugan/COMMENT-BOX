@@ -14,6 +14,10 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.util.List;
 import java.util.Map;
 import com.commentbox.api.service.ApiKeyService;
+import com.commentbox.api.repository.CommentHistoryRepository;
+import com.commentbox.api.model.CommentHistory;
+import com.commentbox.api.model.User;
+import com.commentbox.api.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
@@ -24,6 +28,8 @@ public class CommentService {
     private final PromptBuilder promptBuilder;
     private final WebClient openRouterWebClient;
     private final ApiKeyService apiKeyService;
+    private final CommentHistoryRepository commentHistoryRepository;
+    private final UserRepository userRepository;
 
     @Value("${openrouter.model}")
     private String model;
@@ -64,6 +70,25 @@ public class CommentService {
         String raw = response.getChoices().get(0).getMessage().getContent();
         String outputCode = stripCodeFences(raw);
         int generatesRemaining = calculateGeneratesRemaining(response);
+
+        // Persist history record for the authenticated user
+        try {
+            String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(userEmail).orElse(null);
+            if (user != null) {
+                CommentHistory history = CommentHistory.builder()
+                        .user(user)
+                        .language(request.getLanguage())
+                        .style(request.getStyle())
+                        .density(request.getDensity())
+                        .inputCode(request.getCode())
+                        .outputCode(outputCode)
+                        .build();
+                commentHistoryRepository.save(history);
+            }
+        } catch (Exception ex) {
+            log.warn("Failed to save comment history", ex);
+        }
 
         return CommentResponse.builder()
             .language(request.getLanguage())

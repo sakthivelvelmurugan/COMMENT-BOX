@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comment Box — Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/index.html" class="logo-wrap">
+        <span class="logo-text">comment<span class="logo-accent">box</span></span>
+      </a>
+      <nav class="nav-links">
+        <a href="/index.html" class="nav-link">Editor</a>
+        <a href="#" class="nav-link active">Dashboard</a>
+        <a href="#" class="nav-link">API</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="btn-ghost" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-shell">
+    <section class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total generates</div>
+        <div class="stat-value" id="statTotal">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">This month</div>
+        <div class="stat-value" id="statMonth">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Top language</div>
+        <div class="stat-value" id="statTop">—</div>
+      </div>
+    </section>
+
+    <section class="history-list">
+      <div id="historyContainer"></div>
+      <div class="pagination" id="paginationControls">
+        <button id="prevPage">Previous</button>
+        <span id="pageIndicator">Page 1</span>
+        <button id="nextPage">Next</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="auth.js"></script>
+  <script>
+    async function loadStats() {
+      try {
+        const res = await authFetch('/api/v1/history/stats');
+        if (!res.ok) throw new Error('Failed');
+        const data = await res.json();
+        document.getElementById('statTotal').textContent = data.totalGenerates || 0;
+        document.getElementById('statMonth').textContent = data.thisMonth || 0;
+        const top = Object.entries(data.languageBreakdown || {}).sort((a,b)=>b[1]-a[1])[0];
+        document.getElementById('statTop').textContent = top ? `${top[0]} (${top[1]})` : '—';
+      } catch (e) { console.error(e); }
+    }
+
+    let currentPage = 0;
+    const pageSize = 10;
+
+    async function loadHistory(page = 0) {
+      try {
+        const res = await authFetch(`/api/v1/history?page=${page}&size=${pageSize}`);
+        if (!res.ok) throw new Error('Failed to load history');
+        const data = await res.json();
+        renderHistory(data.content || []);
+        document.getElementById('pageIndicator').textContent = `Page ${data.number + 1} of ${data.totalPages || 1}`;
+      } catch (e) { showToast(e.message || 'Could not load history', true); }
+    }
+
+    function renderHistory(items) {
+      const container = document.getElementById('historyContainer');
+      container.innerHTML = '';
+      if (!items || items.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No history yet</p></div>';
+        return;
+      }
+      items.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'history-card';
+        const langBadge = document.createElement('span'); langBadge.className='badge'; langBadge.textContent=it.language;
+        const meta = document.createElement('div'); meta.className='meta'; meta.textContent = `${it.style} · ${it.density} · ${it.createdAt}`;
+        const preview = document.createElement('pre'); preview.className='preview'; preview.textContent = (it.inputCode||'').slice(0,120) + (it.inputCode && it.inputCode.length>120 ? '...' : '');
+        const actions = document.createElement('div'); actions.className='actions';
+        const openBtn = document.createElement('button'); openBtn.className='btn-primary'; openBtn.textContent='Open in editor';
+        openBtn.addEventListener('click', ()=>{
+          sessionStorage.setItem('cb-restore', JSON.stringify(it));
+          window.location.href = '/index.html';
+        });
+        const delBtn = document.createElement('button'); delBtn.className='btn-ghost'; delBtn.textContent='Delete';
+        delBtn.addEventListener('click', async ()=>{
+          try {
+            const r = await authFetch(`/api/v1/history/${it.id}`, { method: 'DELETE' });
+            if (r.status === 204) { showToast('Deleted'); loadHistory(currentPage); }
+            else { const d = await r.json(); showToast(d.message||'Delete failed', true); }
+          } catch (e) { showToast('Delete failed', true); }
+        });
+        actions.appendChild(openBtn); actions.appendChild(delBtn);
+        card.appendChild(langBadge); card.appendChild(meta); card.appendChild(preview); card.appendChild(actions);
+        container.appendChild(card);
+      });
+    }
+
+    document.getElementById('prevPage').addEventListener('click', ()=>{ if (currentPage>0) { currentPage--; loadHistory(currentPage); } });
+    document.getElementById('nextPage').addEventListener('click', ()=>{ currentPage++; loadHistory(currentPage); });
+
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ try{ localStorage.removeItem('cb-token'); }catch{}; window.location.href='/login.html'; });
+
+    // toast helper
+    function showToast(msg, isError=false){ const t = document.getElementById('toast'); t.textContent=msg; t.className='toast '+(isError?'error':''); setTimeout(()=>t.className='toast',2800);} 
+
+    (async ()=>{ await loadStats(); await loadHistory(0); })();
+  </script>
+</body>
+</html>

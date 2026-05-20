@@ -27,7 +27,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApiException(ApiException ex) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        int status = ex.getStatus();
+        HttpStatus http = HttpStatus.resolve(status);
+        if (http == null) http = HttpStatus.BAD_REQUEST;
+        return buildErrorResponse(ex.getMessage(), http);
     }
 
     @ExceptionHandler(RuntimeException.class)
