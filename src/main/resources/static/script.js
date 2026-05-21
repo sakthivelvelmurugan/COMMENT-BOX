@@ -261,6 +261,12 @@ async function generateComments() {
       body: JSON.stringify(payload)
     });
 
+    if (res.status === 429) {
+      // limit reached — show upgrade modal
+      showUpgradeModal();
+      return;
+    }
+
     const data = await res.json();
     if (!res.ok) {
       throw new Error(data.message || 'API error');
@@ -268,6 +274,16 @@ async function generateComments() {
 
     displayOutput(data.outputCode || '');
     showToast('Comments generated ✓');
+
+    // update usage bar after successful generate
+    if (typeof renderUsageBar === 'function') {
+      renderUsageBar({
+        hasByok: !!data.byokActive,
+        dailyLimit: 10,
+        usedToday: (10 - (data.generatesRemaining >= 0 ? data.generatesRemaining : 0)),
+        remaining: data.generatesRemaining
+      });
+    }
 
   } catch (err) {
     showToast(err.message || 'Something went wrong', true);
@@ -414,4 +430,61 @@ function restoreFromHistory() {
 // attempt restore on load
 document.addEventListener('DOMContentLoaded', () => {
   restoreFromHistory();
+  // load usage info
+  (async ()=>{
+    try {
+      const r = await authFetch('/api/v1/usage');
+      if (!r.ok) return;
+      const d = await r.json();
+      if (typeof renderUsageBar === 'function') renderUsageBar(d);
+    } catch (e) { /* ignore */ }
+  })();
 });
+
+function renderUsageBar(data) {
+  const strip = document.getElementById('usageStrip');
+  const fill = document.getElementById('usageBarFill');
+  const label = document.getElementById('usageLabel');
+  if (!strip || !fill || !label || !data) return;
+  if (data.hasByok) {
+    strip.style.display = 'none';
+    return;
+  }
+  strip.style.display = 'flex';
+  const dailyLimit = data.dailyLimit || 10;
+  const used = data.usedToday || (dailyLimit - Math.max(0, data.remaining || 0));
+  const pct = Math.min(100, Math.round((used / dailyLimit) * 100));
+  fill.style.width = pct + '%';
+  // color thresholds: amber at 7/10 (70%), red at 100%
+  if (used >= dailyLimit) fill.style.background = '#ef4444';
+  else if (used >= 7) fill.style.background = '#f59e0b';
+  else fill.style.background = '#16a34a';
+  label.textContent = `${used} / ${dailyLimit} free generates used today`;
+}
+
+function showUpgradeModal() {
+  const m = document.getElementById('upgradeModal');
+  if (!m) return;
+  m.style.display = 'flex';
+}
+
+function closeUpgradeModal() {
+  const m = document.getElementById('upgradeModal');
+  if (!m) return;
+  m.style.display = 'none';
+}
+
+function focusApiKey() {
+  closeUpgradeModal();
+  const input = document.querySelector('.apikey-input');
+  if (input) {
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    input.focus();
+  } else {
+    // if input not present, render the key input by fetching state
+    (async ()=>{ const info = await fetchKeyInfo(); if (!info || !info.hasKey) renderKeyState({hasKey:false}); const i = document.querySelector('.apikey-input'); if(i) { i.focus(); }})();
+  }
+}
+
+document.getElementById('focusApiKeyBtn')?.addEventListener('click', focusApiKey);
+document.getElementById('closeUpgradeBtn')?.addEventListener('click', closeUpgradeModal);

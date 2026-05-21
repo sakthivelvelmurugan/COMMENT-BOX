@@ -720,3 +720,47 @@ body {
   .apikey-hint { margin-left: 0; }
   .hero { padding: 32px 24px 20px; }
 }
+
+/* ===== USAGE STRIP ===== */
+.usage-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.usage-bar-wrap {
+  flex: 1;
+  height: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.usage-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: #16a34a;
+  transition: width 0.28s ease, background 0.28s ease;
+}
+.usage-label { font-size: 13px; color: var(--text-sec); min-width: 180px; text-align: right; }
+
+/* amber and red states via inline style changes from JS */
+
+/* ===== UPGRADE MODAL ===== */
+.modal-overlay {
+  min-height: 120px; /* contribute to layout height, not fixed */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.32);
+  padding: 24px;
+}
+.modal-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+}
+

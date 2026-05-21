@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
+import com.commentbox.api.util.LimitExceededException;
 
 @RestControllerAdvice
 @Slf4j
@@ -31,6 +32,17 @@ public class GlobalExceptionHandler {
         HttpStatus http = HttpStatus.resolve(status);
         if (http == null) http = HttpStatus.BAD_REQUEST;
         return buildErrorResponse(ex.getMessage(), http);
+    }
+
+    @ExceptionHandler(LimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleLimitExceeded(LimitExceededException ex) {
+        ErrorResponse body = ErrorResponse.builder()
+            .error(true)
+            .message(ex.getMessage())
+            .status(429)
+            .code("LIMIT_EXCEEDED")
+            .build();
+        return ResponseEntity.status(429).body(body);
     }
 
     @ExceptionHandler(RuntimeException.class)

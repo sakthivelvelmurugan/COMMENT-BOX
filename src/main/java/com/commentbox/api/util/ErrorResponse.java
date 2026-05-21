@@ -10,4 +10,5 @@ public class ErrorResponse {
     private boolean error;
     private String message;
     private int status;
+    private String code;
 }

@@ -67,6 +67,14 @@
   <!-- MAIN EDITOR -->
   <main class="editor-shell">
 
+    <!-- USAGE STRIP -->
+    <div class="usage-strip" id="usageStrip" style="display:none">
+      <div class="usage-bar-wrap">
+        <div class="usage-bar-fill" id="usageBarFill"></div>
+      </div>
+      <div class="usage-label" id="usageLabel"></div>
+    </div>
+
     <!-- CONTROLS BAR -->
     <div class="controls-bar">
       <div class="lang-tabs" role="tablist" aria-label="Select language">
@@ -224,6 +232,18 @@
 
   <!-- TOAST -->
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- UPGRADE MODAL -->
+  <div class="modal-overlay" id="upgradeModal" style="display:none;">
+    <div class="modal-card">
+      <h3>Daily limit reached</h3>
+      <p>You've used all 10 free generates for today. Add your own OpenRouter API key for unlimited generates — your key, your usage.</p>
+      <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end;">
+        <button class="btn-primary" id="focusApiKeyBtn">Add my API key</button>
+        <button class="btn-ghost" id="closeUpgradeBtn">Maybe later</button>
+      </div>
+    </div>
+  </div>
 
   <!-- FOOTER -->
   <footer class="footer">

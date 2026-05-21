@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,6 +36,14 @@ public class User implements UserDetails {
     @Builder.Default
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Builder.Default
+    @Column(name = "daily_generate_count", nullable = false)
+    private Integer dailyGenerateCount = 0;
+
+    @Builder.Default
+    @Column(name = "last_reset_date")
+    private LocalDate lastResetDate = LocalDate.now();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.util.List;
 import java.util.Map;
 import com.commentbox.api.service.ApiKeyService;
+import com.commentbox.api.service.UsageLimitService;
 import com.commentbox.api.repository.CommentHistoryRepository;
 import com.commentbox.api.model.CommentHistory;
 import com.commentbox.api.model.User;
@@ -34,16 +35,35 @@ public class CommentService {
     @Value("${openrouter.model}")
     private String model;
 
+    @Value("${openrouter.api.key:}")
+    private String platformApiKey;
+
+    private final UsageLimitService usageLimitService;
+
     public CommentResponse generateComment(CommentRequest request) {
         String prompt = promptBuilder.buildPrompt(request.getLanguage(), request.getStyle(), request.getDensity(), request.getCode());
+        boolean byokActive = false;
+        String provider = "openrouter";
+        int generatesRemaining = 0;
+        String apiKeyToUse;
         OpenRouterResponse response;
         try {
-            // Resolve API key for the current user (openrouter provider)
+            // Resolve API key and enforce usage limits for the current user
             String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-            String apiKey = apiKeyService.resolveKey(userEmail, "openrouter");
+            User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new ApiException("User not found", 401));
+
+            if (apiKeyService.hasActiveKey(userEmail, "openrouter")) {
+                // BYOK user — use their key and skip limits
+                byokActive = true;
+                apiKeyToUse = apiKeyService.resolveKey(userEmail, "openrouter");
+            } else {
+                // Free-tier user — enforce daily limit
+                usageLimitService.checkAndIncrement(user);
+                apiKeyToUse = platformApiKey;
+            }
 
             response = openRouterWebClient.post()
-                .headers(h -> h.setBearerAuth(apiKey))
+                .headers(h -> h.setBearerAuth(apiKeyToUse))
                 .bodyValue(Map.of(
                     "model", model,
                     "max_tokens", 4096,
@@ -69,7 +89,7 @@ public class CommentService {
 
         String raw = response.getChoices().get(0).getMessage().getContent();
         String outputCode = stripCodeFences(raw);
-        int generatesRemaining = calculateGeneratesRemaining(response);
+        generatesRemaining = calculateGeneratesRemaining(response);
 
         // Persist history record for the authenticated user
         try {
@@ -89,11 +109,25 @@ public class CommentService {
         } catch (Exception ex) {
             log.warn("Failed to save comment history", ex);
         }
+        // compute remaining after successful generate
+        try {
+            String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepository.findByEmail(userEmail).orElse(null);
+            if (byokActive) {
+                generatesRemaining = -1;
+            } else if (user != null) {
+                generatesRemaining = usageLimitService.getRemainingGenerates(user);
+            }
+        } catch (Exception e) {
+            generatesRemaining = 0;
+        }
 
         return CommentResponse.builder()
             .language(request.getLanguage())
             .outputCode(outputCode)
             .generatesRemaining(generatesRemaining)
+            .byokActive(byokActive)
+            .provider("openrouter")
             .build();
     }
 

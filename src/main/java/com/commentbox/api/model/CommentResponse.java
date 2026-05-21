@@ -14,4 +14,6 @@ public class CommentResponse {
     private String outputCode;
     private String language;
     private int generatesRemaining;
+    private boolean byokActive;
+    private String provider;
 }
