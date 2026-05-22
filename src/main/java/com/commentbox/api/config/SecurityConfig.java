@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
+                        "/",
                         "/auth/register",
                         "/auth/login",
                         "/actuator/health",
@@ -41,7 +42,11 @@ public class SecurityConfig {
                         "/auth.js",
                         "/style.css",
                         "/script.js",
-                        "/api/s/**"
+                        "/api/s/**",
+                        "/**/*.js",
+                        "/**/*.css",
+                        "/**/*.html",
+                        "/favicon.ico"
                     ).permitAll()
                     .anyRequest().authenticated()
                 );

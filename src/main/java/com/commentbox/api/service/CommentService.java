@@ -94,6 +94,7 @@ public class CommentService {
         generatesRemaining = calculateGeneratesRemaining(response);
 
         // Persist history record for the authenticated user
+        Long historyId = null;
         try {
             String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
             User user = userRepository.findByEmail(userEmail).orElse(null);
