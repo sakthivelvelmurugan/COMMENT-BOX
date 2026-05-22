@@ -22,4 +22,5 @@ public interface CommentHistoryRepository extends JpaRepository<CommentHistory, 
 
     @Query("SELECT h.language, COUNT(h) FROM CommentHistory h WHERE h.user = :user GROUP BY h.language")
     List<Object[]> findLanguageCountsByUser(@Param("user") User user);
+    Optional<CommentHistory> findByShareUuid(String uuid);
 }

@@ -41,7 +41,9 @@ public class CommentService {
     private final UsageLimitService usageLimitService;
 
     public CommentResponse generateComment(CommentRequest request) {
-        String prompt = promptBuilder.buildPrompt(request.getLanguage(), request.getStyle(), request.getDensity(), request.getCode());
+        // sanitize input
+        String code = sanitizeCode(request.getCode());
+        String prompt = promptBuilder.buildPrompt(request.getLanguage(), request.getStyle(), request.getDensity(), code);
         boolean byokActive = false;
         String provider = "openrouter";
         int generatesRemaining = 0;
@@ -104,7 +106,8 @@ public class CommentService {
                         .inputCode(request.getCode())
                         .outputCode(outputCode)
                         .build();
-                commentHistoryRepository.save(history);
+                CommentHistory saved = commentHistoryRepository.save(history);
+                historyId = saved.getId();
             }
         } catch (Exception ex) {
             log.warn("Failed to save comment history", ex);
@@ -128,7 +131,17 @@ public class CommentService {
             .generatesRemaining(generatesRemaining)
             .byokActive(byokActive)
             .provider("openrouter")
+            .historyId(historyId)
             .build();
+    }
+
+    private String sanitizeCode(String code) {
+        if (code == null) return "";
+        String trimmed = code.trim();
+        if (trimmed.indexOf('\0') >= 0) {
+            throw new ApiException("Invalid character in code input");
+        }
+        return trimmed;
     }
 
     private int calculateGeneratesRemaining(OpenRouterResponse response) {

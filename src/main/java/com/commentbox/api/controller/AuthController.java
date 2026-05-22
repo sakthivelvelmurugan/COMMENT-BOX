@@ -33,9 +33,9 @@ public class AuthController {
     }
 
     public static class RegisterRequest {
-        @NotBlank @Email
+        @NotBlank @Email @jakarta.validation.constraints.Size(max = 254)
         public String email;
-        @NotBlank
+        @NotBlank @jakarta.validation.constraints.Size(min = 8, message = "Password must be at least 8 characters")
         public String password;
     }
 

@@ -36,7 +36,9 @@ async function authFetch(url, options = {}) {
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
-  const res = await fetch(url, { ...options, headers });
+  const base = (window.API_BASE_URL && window.API_BASE_URL.length) ? window.API_BASE_URL : '';
+  const full = url.startsWith('http') ? url : `${base}${url}`;
+  const res = await fetch(full, { ...options, headers });
   if (res.status === 401) throw new AuthError('Unauthorized');
   return res;
 }

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shared Comment — CommentBox</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="share-shell">
+    <header class="share-header">
+      <a href="/">‹ Back to Editor</a>
+    </header>
+    <section class="share-content">
+      <h2 id="title">Shared Comment</h2>
+      <div id="meta" class="share-meta"></div>
+      <pre id="snippet" class="output-pre">Loading…</pre>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script>
+    async function loadShared() {
+      const path = window.location.pathname;
+      const uuid = path.split('/').pop();
+      try {
+        const base = window.API_BASE_URL || '';
+        const res = await fetch(`${base}/api/s/${uuid}`);
+        if (!res.ok) throw new Error('Not found');
+        const data = await res.json();
+        document.getElementById('title').textContent = data.title || 'Shared comment';
+        document.getElementById('meta').textContent = `${data.language || ''} · ${new Date(data.createdAt).toLocaleString()}`;
+        document.getElementById('snippet').textContent = data.outputCode || '';
+      } catch (e) {
+        document.getElementById('snippet').textContent = 'Unable to load shared snippet.';
+      }
+    }
+    loadShared();
+  </script>
+</body>
+</html>

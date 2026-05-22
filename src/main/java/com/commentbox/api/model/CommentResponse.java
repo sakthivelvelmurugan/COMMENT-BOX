@@ -16,4 +16,5 @@ public class CommentResponse {
     private int generatesRemaining;
     private boolean byokActive;
     private String provider;
+    private Long historyId;
 }

@@ -18,6 +18,7 @@ const outputPre      = document.getElementById('outputPre');
 const emptyState     = document.getElementById('emptyState');
 const copyBtn        = document.getElementById('copyBtn');
 const downloadBtn    = document.getElementById('downloadBtn');
+const shareBtn       = document.getElementById('shareBtn');
 const pasteBtn       = document.getElementById('pasteBtn');
 const clearBtn       = document.getElementById('clearBtn');
 const apiKeyInput    = document.getElementById('apiKeyInput');
@@ -272,6 +273,9 @@ async function generateComments() {
       throw new Error(data.message || 'API error');
     }
 
+    // remember latest history id for sharing
+    try { window.lastHistoryId = data.historyId; } catch (e) {}
+
     displayOutput(data.outputCode || '');
     showToast('Comments generated ✓');
 
@@ -285,6 +289,11 @@ async function generateComments() {
       });
     }
 
+    // enable share button when output present
+    try {
+      if (shareBtn) { shareBtn.disabled = false; shareBtn.style.display = 'inline-flex'; }
+    } catch (e) {}
+
   } catch (err) {
     showToast(err.message || 'Something went wrong', true);
     console.error('[CommentBox]', err);
@@ -292,6 +301,21 @@ async function generateComments() {
     setLoading(false);
   }
 }
+
+async function shareLatest() {
+  try {
+    const id = window.lastHistoryId;
+    if (!id) { showToast('No history id available', true); return; }
+    const res = await authFetch(`/api/v1/history/${id}/share`, { method: 'POST' });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.message || 'Share failed'); }
+    const payload = await res.json();
+    const url = payload.shareUrl;
+    await navigator.clipboard.writeText(url);
+    showToast('Link copied!');
+  } catch (e) { showToast(e.message || 'Share failed', true); }
+}
+
+if (shareBtn) shareBtn.addEventListener('click', shareLatest);
 
 /* ── strip markdown code fences if model adds them ── */
 function stripCodeFences(text) {

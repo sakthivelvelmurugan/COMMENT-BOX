@@ -43,4 +43,10 @@ public class CommentHistory {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "share_uuid", length = 36, unique = true)
+    private String shareUuid;
+
+    @Column(name = "is_shared")
+    private Boolean isShared = false;
 }

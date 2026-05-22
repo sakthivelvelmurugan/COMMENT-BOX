@@ -14,5 +14,6 @@ public class SaveKeyRequest {
     @NotBlank
     private String provider;
     @NotBlank
+    @Size(max = 200)
     private String apiKey;
 }
