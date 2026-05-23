@@ -13,7 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
     private String allowedOrigins;
 
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
+    public void addCorsMappings(@org.springframework.lang.NonNull CorsRegistry registry) {
         registry.addMapping("/**")
             .allowedOrigins(StringUtils.commaDelimitedListToStringArray(allowedOrigins))
             .allowedMethods("GET", "POST", "DELETE", "OPTIONS")

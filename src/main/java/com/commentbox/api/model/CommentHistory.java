@@ -47,6 +47,7 @@ public class CommentHistory {
     @Column(name = "share_uuid", length = 36, unique = true)
     private String shareUuid;
 
+    @Builder.Default
     @Column(name = "is_shared")
     private Boolean isShared = false;
 }

@@ -14,7 +14,9 @@ public class OpenRouterConfig {
     public WebClient openRouterWebClient(
             @Value("${openrouter.api.url}") String apiUrl,
             @Value("${openrouter.api.key}") String apiKey) {
-
+        if (apiUrl == null) {
+            throw new IllegalArgumentException("openrouter.api.url must be configured");
+        }
         return WebClient.builder()
             .baseUrl(apiUrl)
             .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)

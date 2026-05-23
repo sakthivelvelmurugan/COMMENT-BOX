@@ -27,6 +27,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
     }
 
+    @SuppressWarnings("null")
     public User registerUser(String email, String rawPassword) {
         String hash = passwordEncoder.encode(rawPassword);
         User u = User.builder()
@@ -34,6 +35,6 @@ public class UserService implements UserDetailsService {
                 .passwordHash(hash)
                 .role("USER")
                 .build();
-        return userRepository.save(u);
+        return java.util.Objects.requireNonNull(userRepository.save(u));
     }
 }

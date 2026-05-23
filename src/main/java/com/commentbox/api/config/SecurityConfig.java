@@ -2,7 +2,6 @@ package com.commentbox.api.config;
 
 import com.commentbox.api.security.JwtAuthFilter;
 import com.commentbox.api.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

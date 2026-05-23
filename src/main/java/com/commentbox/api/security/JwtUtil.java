@@ -89,7 +89,9 @@ public class JwtUtil {
         byte[] expected = hmac(signingInput.getBytes(StandardCharsets.UTF_8));
         if (!constantTimeEquals(sig, expected)) throw new IllegalArgumentException("Invalid signature");
         byte[] payloadBytes = base64UrlDecode(parts[1]);
-        return mapper.readValue(payloadBytes, Map.class);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) mapper.readValue(payloadBytes, Map.class);
+        return result;
     }
 
     private byte[] hmac(byte[] data) throws Exception {

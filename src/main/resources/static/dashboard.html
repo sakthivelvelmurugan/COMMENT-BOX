@@ -11,15 +11,24 @@
   <header class="navbar">
     <div class="nav-inner">
       <a href="/index.html" class="logo-wrap">
+        <svg class="logo-svg" width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="38" height="38" rx="10" fill="var(--accent)"/>
+          <rect x="7" y="7" width="22" height="16" rx="4" fill="var(--logo-bubble)"/>
+          <path d="M12 23 L10 30 L18 25" fill="var(--logo-bubble)"/>
+          <rect x="11" y="11" width="6" height="2" rx="1" ry="1" fill="var(--logo-line1)"/>
+          <rect x="11" y="15" width="10" height="2" rx="1" ry="1" fill="var(--logo-line2)"/>
+          <text x="20" y="22" font-size="8" font-family="monospace" fill="var(--logo-bracket)" font-weight="700">{}</text>
+        </svg>
         <span class="logo-text">comment<span class="logo-accent">box</span></span>
       </a>
       <nav class="nav-links">
         <a href="/index.html" class="nav-link">Editor</a>
-        <a href="#" class="nav-link active">Dashboard</a>
-        <a href="#" class="nav-link">API</a>
+        <a href="/dashboard.html" class="nav-link active">Dashboard</a>
+        <a href="/docs.html" class="nav-link">Docs</a>
       </nav>
       <div class="nav-actions">
-        <button class="btn-ghost" id="logoutBtn">Logout</button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode"></button>
+        <button class="btn-ghost" id="logoutBtn" type="button">Logout</button>
       </div>
     </div>
   </header>

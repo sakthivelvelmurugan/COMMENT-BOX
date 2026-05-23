@@ -2,24 +2,23 @@ package com.commentbox.api.service;
 
 import com.commentbox.api.model.CommentRequest;
 import com.commentbox.api.model.CommentResponse;
+import com.commentbox.api.model.CommentHistory;
+import com.commentbox.api.model.User;
+import com.commentbox.api.repository.CommentHistoryRepository;
+import com.commentbox.api.repository.UserRepository;
 import com.commentbox.api.util.ApiException;
 import com.commentbox.api.util.PromptBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
 import java.util.Map;
-import com.commentbox.api.service.ApiKeyService;
-import com.commentbox.api.service.UsageLimitService;
-import com.commentbox.api.repository.CommentHistoryRepository;
-import com.commentbox.api.model.CommentHistory;
-import com.commentbox.api.model.User;
-import com.commentbox.api.repository.UserRepository;
-import org.springframework.security.core.context.SecurityContextHolder;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +28,7 @@ public class CommentService {
     private final PromptBuilder promptBuilder;
     private final WebClient openRouterWebClient;
     private final ApiKeyService apiKeyService;
+    private final UsageLimitService usageLimitService;
     private final CommentHistoryRepository commentHistoryRepository;
     private final UserRepository userRepository;
 
@@ -38,14 +38,11 @@ public class CommentService {
     @Value("${openrouter.api.key:}")
     private String platformApiKey;
 
-    private final UsageLimitService usageLimitService;
-
     public CommentResponse generateComment(CommentRequest request) {
         // sanitize input
         String code = sanitizeCode(request.getCode());
         String prompt = promptBuilder.buildPrompt(request.getLanguage(), request.getStyle(), request.getDensity(), code);
         boolean byokActive = false;
-        String provider = "openrouter";
         int generatesRemaining = 0;
         String apiKeyToUse;
         OpenRouterResponse response;
@@ -64,13 +61,17 @@ public class CommentService {
                 apiKeyToUse = platformApiKey;
             }
 
-            response = openRouterWebClient.post()
-                .headers(h -> h.setBearerAuth(apiKeyToUse))
-                .bodyValue(Map.of(
+            if (apiKeyToUse == null) {
+                throw new ApiException("API key not configured", 500);
+            }
+            Map<String, Object> payload = Map.of(
                     "model", model,
                     "max_tokens", 4096,
                     "messages", List.of(Map.of("role", "user", "content", prompt))
-                ))
+            );
+            response = openRouterWebClient.post()
+                .headers(h -> h.setBearerAuth(apiKeyToUse))
+                .bodyValue(Objects.requireNonNull(payload))
                 .retrieve()
                 .bodyToMono(OpenRouterResponse.class)
                 .block();
@@ -107,8 +108,10 @@ public class CommentService {
                         .inputCode(request.getCode())
                         .outputCode(outputCode)
                         .build();
-                CommentHistory saved = commentHistoryRepository.save(history);
-                historyId = saved.getId();
+                if (history != null) {
+                    CommentHistory saved = commentHistoryRepository.save(history);
+                    historyId = saved.getId();
+                }
             }
         } catch (Exception ex) {
             log.warn("Failed to save comment history", ex);

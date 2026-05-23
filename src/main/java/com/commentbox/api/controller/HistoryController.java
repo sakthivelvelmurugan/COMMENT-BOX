@@ -9,10 +9,8 @@ import com.commentbox.api.repository.UserRepository;
 import com.commentbox.api.util.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,7 +21,6 @@ import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/history")
@@ -55,7 +52,7 @@ public class HistoryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOne(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new ApiException("User not found"));
-        CommentHistory h = historyRepo.findByIdAndUser(id, user).orElseThrow(() -> new ApiException("Not found", 404));
+        historyRepo.findByIdAndUser(id, user).orElseThrow(() -> new ApiException("Not found", 404));
         historyRepo.deleteByIdAndUser(id, user);
         return ResponseEntity.noContent().build();
     }

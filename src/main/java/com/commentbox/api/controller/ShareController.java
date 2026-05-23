@@ -3,7 +3,6 @@ package com.commentbox.api.controller;
 import com.commentbox.api.model.CommentHistory;
 import com.commentbox.api.model.SharedSnippetResponse;
 import com.commentbox.api.repository.CommentHistoryRepository;
-import com.commentbox.api.repository.UserRepository;
 import com.commentbox.api.util.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +16,11 @@ import java.util.UUID;
 public class ShareController {
 
     private final CommentHistoryRepository commentHistoryRepository;
-    private final UserRepository userRepository;
 
     @PostMapping("/api/v1/history/{id}/share")
     public ResponseEntity<?> share(@PathVariable Long id) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (id == null) throw new ApiException("Invalid ID", 400);
         CommentHistory h = commentHistoryRepository.findById(id).orElseThrow(() -> new ApiException("Not found", 404));
         if (!h.getUser().getEmail().equals(email)) throw new ApiException("Forbidden", 403);
         String uuid = UUID.randomUUID().toString();

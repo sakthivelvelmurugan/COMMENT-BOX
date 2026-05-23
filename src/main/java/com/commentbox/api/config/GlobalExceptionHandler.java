@@ -2,19 +2,18 @@ package com.commentbox.api.config;
 
 import com.commentbox.api.util.ApiException;
 import com.commentbox.api.util.ErrorResponse;
+import com.commentbox.api.util.LimitExceededException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.stream.Collectors;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import java.util.Set;
-import com.commentbox.api.util.LimitExceededException;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
@@ -62,11 +61,12 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status) {
-        return ResponseEntity.status(status).body(
+        HttpStatus finalStatus = status != null ? status : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(finalStatus).body(
             ErrorResponse.builder()
                 .error(true)
                 .message(message)
-                .status(status.value())
+                .status(finalStatus.value())
                 .build()
         );
     }

@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -45,7 +44,11 @@ public class ApiKeyService {
                     .keyHint(hint)
                     .isActive(true)
                     .build();
-            saved = userApiKeyRepository.save(newRec);
+            if (newRec != null) {
+                saved = userApiKeyRepository.save(newRec);
+            } else {
+                throw new ApiException("Failed to create API key", 500);
+            }
         }
 
         return ApiKeyResponse.builder()

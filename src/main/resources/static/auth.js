@@ -46,7 +46,8 @@ async function authFetch(url, options = {}) {
 // On every page load, check auth for protected pages
 (() => {
   const path = window.location.pathname || '';
-  const publicPaths = ['/login.html', '/register.html', '/auth.js', '/style.css', '/script.js', '/'];
+  const publicPaths = ['/login.html', '/register.html', '/share.html', '/docs.html', '/auth.js', '/style.css', '/script.js', '/config.js', '/'];
+  if (path.startsWith('/s/')) return;
   if (!publicPaths.includes(path) && !isLoggedIn()) {
     window.location.href = '/login.html';
   }
