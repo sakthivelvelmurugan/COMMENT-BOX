@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "java -jar -Dspring.profiles.active=prod /app/commentbox-api-0.0.1-SNAPSHOT.jar"
+startCommand = "java -jar -Dspring.profiles.active=prod -Dserver.port=${PORT:-8085} /app/app.jar"
 healthcheckPath = "/actuator/health"
 healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
