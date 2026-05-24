@@ -3,10 +3,7 @@
    Handles: theme, language tabs, editor, API calls
 =================================================== */
 
-const toast = document.getElementById('toast');
-const themeToggle = document.getElementById('themeToggle');
-const navToggle = document.getElementById('navToggle');
-const logoutBtn = document.getElementById('logoutBtn');
+// Elements are queried lazily inside setup functions so pages without them won't blow up
 
 let currentLang = 'java';
 let toastTimer;
@@ -22,12 +19,13 @@ function getStoredTheme() {
 }
 
 function showToast(message, isError = false) {
-  if (!toast) return;
+  const t = document.getElementById('toast');
+  if (!t) return;
   clearTimeout(toastTimer);
-  toast.textContent = message;
-  toast.classList.toggle('error', isError);
-  toast.classList.add('show');
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+  t.textContent = message;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
 function renderLineNumbers(textarea, container) {
@@ -98,10 +96,10 @@ function renderUsageBar(data) {
   const label = document.getElementById('usageLabel');
   if (!strip || !fill || !label || !data) return;
   if (data.hasByok) {
-    strip.style.display = 'none';
+    strip.hidden = true;
     return;
   }
-  strip.style.display = 'flex';
+  strip.hidden = false;
   const dailyLimit = data.dailyLimit || 10;
   const used = data.usedToday || (dailyLimit - Math.max(0, data.remaining || 0));
   const pct = Math.min(100, Math.round((used / dailyLimit) * 100));
@@ -224,8 +222,8 @@ async function generateComments(config) {
   if (!code) { showToast('Please paste some code first', true); return; }
 
   setLoading(true, { generateBtn, generateInner, generateSpinner, paneOutput });
-  emptyState.style.display = 'none';
-  outputPre.style.display = 'none';
+  if (emptyState) emptyState.hidden = true;
+  if (outputPre) outputPre.hidden = true;
   outputPre.textContent = '';
   outLineNumbers.innerHTML = '';
   outCharCount.textContent = '';
@@ -253,7 +251,7 @@ async function generateComments(config) {
 
     const output = stripCodeFences(data.outputCode || '');
     outputPre.textContent = output;
-    outputPre.style.display = 'block';
+    outputPre.hidden = false;
     renderOutLineNumbers(output, outLineNumbers);
 
     const lines = output.split('\n').length;
@@ -319,7 +317,7 @@ function restoreFromHistory(config) {
     if (obj.density) config.density.value = obj.density;
     if (obj.outputCode) {
       config.outputPre.textContent = obj.outputCode;
-      config.outputPre.style.display = 'block';
+      config.outputPre.hidden = false;
       renderOutLineNumbers(obj.outputCode, config.outLineNumbers);
       const lines = obj.outputCode.split('\n').length;
       config.outLineCount.textContent = `${lines} line${lines !== 1 ? 's' : ''}`;
@@ -329,7 +327,7 @@ function restoreFromHistory(config) {
         config.shareBtn.disabled = false;
         config.shareBtn.style.display = 'inline-flex';
       }
-      config.emptyState.style.display = 'none';
+      config.emptyState.hidden = true;
     }
 
     sessionStorage.removeItem('cb-restore');
@@ -393,8 +391,8 @@ async function setupEditor() {
     codeInputEl.value = '';
     codeInputEl.dispatchEvent(new Event('input'));
     charCountEl.textContent = '0 lines';
-    emptyStateEl.style.display = '';
-    outputPreEl.style.display = 'none';
+    if (emptyStateEl) emptyStateEl.hidden = false;
+    if (outputPreEl) outputPreEl.hidden = true;
     outputPreEl.textContent = '';
     outLineNumbersEl.innerHTML = '';
     outCharCountEl.textContent = '';
@@ -514,5 +512,6 @@ function setupGlobal() {
 document.addEventListener('DOMContentLoaded', () => {
   setupGlobal();
   setupEditor();
+  setupAuth();
   fetchKeyInfo().then(info => { if (info) renderKeyState(info); });
 });

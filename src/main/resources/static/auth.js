@@ -45,10 +45,12 @@ async function authFetch(url, options = {}) {
 
 // On every page load, check auth for protected pages
 (() => {
-  const path = window.location.pathname || '';
-  const publicPaths = ['/login.html', '/register.html', '/share.html', '/docs.html', '/auth.js', '/style.css', '/script.js', '/config.js', '/'];
+  const path = window.location.pathname || '/';
+  const publicPaths = new Set(['/login.html', '/register.html', '/share.html', '/docs.html', '/', '/index.html']);
+  // allow share short URLs (/s/...) and static asset requests
   if (path.startsWith('/s/')) return;
-  if (!publicPaths.includes(path) && !isLoggedIn()) {
+  if (path.startsWith('/static/') || /\.(css|js|png|svg|ico|json)$/.test(path)) return;
+  if (!publicPaths.has(path) && !isLoggedIn()) {
     window.location.href = '/login.html';
   }
 })();

@@ -721,6 +721,23 @@ body {
   .hero { padding: 32px 24px 20px; }
 }
 
+/* Missing small utility styles used by HTML */
+.apikey-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.apikey-card-header { display:flex; gap:10px; align-items:center; }
+.apikey-title { font-weight:600; font-size:13px; margin:0; }
+.apikey-subtitle { font-size:12px; color:var(--text-muted); margin:0; }
+.key-badge { background:var(--surface2); border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-family:var(--font-code); }
+.control-group { display:flex; flex-direction:column; gap:6px; }
+.nav-toggle { display:inline-flex; width:40px; height:40px; align-items:center; justify-content:center; border:1px solid transparent; background:transparent; border-radius:8px; cursor:pointer; }
+.nav-user { font-size:13px; color:var(--text-sec); }
+.line-count { font-size:12px; color:var(--text-muted); font-family:var(--font-code); }
+.pane-footer--split { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+
+
 /* ===== USAGE STRIP ===== */
 .usage-strip {
   display: flex;

@@ -4,9 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Shared Comment — CommentBox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="/index.html" class="logo-wrap">CommentBox</a>
+      <nav class="nav-links">
+        <a href="/index.html" class="nav-link">Editor</a>
+        <a href="/dashboard.html" class="nav-link">Dashboard</a>
+        <a href="/docs.html" class="nav-link">Docs</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+          <span class="theme-icon sun">☀️</span>
+          <span class="theme-icon moon">🌙</span>
+        </button>
+      </div>
+    </div>
+  </header>
   <main class="share-shell">
     <header class="share-header">
       <a href="/">‹ Back to Editor</a>
@@ -21,8 +40,18 @@
   <script src="config.js"></script>
   <script>
     async function loadShared() {
-      const path = window.location.pathname;
-      const uuid = path.split('/').pop();
+      const path = window.location.pathname || '/';
+      let uuid = null;
+      if (path.startsWith('/s/')) {
+        uuid = path.split('/').pop();
+      } else {
+        const params = new URLSearchParams(window.location.search);
+        uuid = params.get('id') || params.get('uuid') || null;
+      }
+      if (!uuid) {
+        document.getElementById('snippet').textContent = 'No shared id provided.';
+        return;
+      }
       try {
         const base = window.API_BASE_URL || '';
         const res = await fetch(`${base}/api/s/${uuid}`);
