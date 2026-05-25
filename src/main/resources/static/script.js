@@ -260,7 +260,7 @@ async function generateComments(config) {
     if (downloadBtn) downloadBtn.disabled = false;
     if (shareBtn) {
       shareBtn.disabled = false;
-      shareBtn.style.display = 'inline-flex';
+      shareBtn.hidden = false;
     }
     window.lastHistoryId = data.historyId;
     showToast('Comments generated ✓');
@@ -325,7 +325,7 @@ function restoreFromHistory(config) {
       if (config.downloadBtn) config.downloadBtn.disabled = false;
       if (config.shareBtn) {
         config.shareBtn.disabled = false;
-        config.shareBtn.style.display = 'inline-flex';
+        config.shareBtn.hidden = false;
       }
       config.emptyState.hidden = true;
     }
@@ -336,6 +336,64 @@ function restoreFromHistory(config) {
   } catch (err) {
     console.error('restoreFromHistory', err);
     return false;
+  }
+}
+
+function setupAuth() {
+  Array.from(document.querySelectorAll('.password-toggle')).forEach(btn => {
+    btn.addEventListener('click', () => {
+      const group = btn.closest('.password-group');
+      if (!group) return;
+      const input = group.querySelector('input[type="password"], input[type="text"]');
+      if (!input) return;
+      input.type = input.type === 'password' ? 'text' : 'password';
+      btn.textContent = input.type === 'password' ? 'Show' : 'Hide';
+    });
+  });
+
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail')?.value || '';
+      const password = document.getElementById('loginPassword')?.value || '';
+      const errPanel = document.getElementById('loginError');
+      try {
+        const res = await authFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Login failed');
+        localStorage.setItem('cb-token', data.token);
+        window.location.href = '/dashboard.html';
+      } catch (err) {
+        if (errPanel) { errPanel.hidden = false; errPanel.textContent = err.message || 'Login failed'; }
+        showToast(err.message || 'Login failed', true);
+      }
+    });
+  }
+
+  const registerForm = document.getElementById('registerForm');
+  if (registerForm) {
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('registerEmail')?.value || '';
+      const password = document.getElementById('registerPassword')?.value || '';
+      const confirm = document.getElementById('confirmPassword')?.value || '';
+      const errPanel = document.getElementById('registerError');
+      if (password !== confirm) {
+        if (errPanel) { errPanel.hidden = false; errPanel.textContent = 'Passwords do not match'; }
+        return showToast('Passwords do not match', true);
+      }
+      try {
+        const res = await authFetch('/auth/register', { method: 'POST', body: JSON.stringify({ email, password }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Register failed');
+        localStorage.setItem('cb-token', data.token);
+        window.location.href = '/dashboard.html';
+      } catch (err) {
+        if (errPanel) { errPanel.hidden = false; errPanel.textContent = err.message || 'Register failed'; }
+        showToast(err.message || 'Register failed', true);
+      }
+    });
   }
 }
 
@@ -493,6 +551,10 @@ async function setupEditor() {
 
 function setupGlobal() {
   applyTheme(getStoredTheme());
+
+  const themeToggle = document.getElementById('themeToggle');
+  const navToggle = document.getElementById('navToggle');
+  const logoutBtn = document.getElementById('logoutBtn');
 
   themeToggle?.addEventListener('click', () => {
     const current = document.documentElement.getAttribute('data-theme');

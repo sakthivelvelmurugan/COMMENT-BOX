@@ -129,7 +129,7 @@
     document.getElementById('prevPage').addEventListener('click', ()=>{ if (currentPage>0) { currentPage--; loadHistory(currentPage); } });
     document.getElementById('nextPage').addEventListener('click', ()=>{ currentPage++; loadHistory(currentPage); });
 
-    document.getElementById('logoutBtn').addEventListener('click', ()=>{ try{ localStorage.removeItem('cb-token'); }catch{}; window.location.href='/login.html'; });
+    document.getElementById('logoutBtn')?.addEventListener('click', ()=>{ try{ localStorage.removeItem('cb-token'); }catch{}; window.location.href='/login.html'; });
 
     // toast helper — use show class
     function showToast(msg, isError=false){ const t = document.getElementById('toast'); if(!t) return; t.textContent = msg; t.classList.toggle('error', !!isError); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);} 
