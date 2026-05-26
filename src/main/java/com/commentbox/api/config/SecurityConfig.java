@@ -37,14 +37,15 @@ public class SecurityConfig {
                         "/index.html",
                         "/share.html",
                         "/dashboard.html",
+                        "/docs.html",
                         "/config.js",
                         "/auth.js",
                         "/style.css",
                         "/script.js",
                         "/api/s/**",
-                        "/**/*.js",
-                        "/**/*.css",
-                        "/**/*.html",
+                        "/*.js",
+                        "/*.css",
+                        "/*.html",
                         "/favicon.ico"
                     ).permitAll()
                     .anyRequest().authenticated()

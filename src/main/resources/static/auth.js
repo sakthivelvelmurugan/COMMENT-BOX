@@ -16,17 +16,16 @@ function decodeJwtPayload(token) {
 }
 
 function isLoggedIn() {
-  const token = getToken();
-  if (!token) return false;
-  const payload = decodeJwtPayload(token);
-  if (!payload || !payload.exp) return false;
-  const nowSec = Math.floor(Date.now() / 1000);
-  return payload.exp > nowSec;
+  return true;
+}
+
+function decodeJwtPayload(token) {
+  return null;
 }
 
 function logout() {
   localStorage.removeItem('cb-token');
-  window.location.href = '/login.html';
+  window.location.href = '/index.html';
 }
 
 async function authFetch(url, options = {}) {
@@ -44,16 +43,9 @@ async function authFetch(url, options = {}) {
   return res;
 }
 
-// On every page load, check auth for protected pages
+// No redirect checks needed as authentication is bypassed
 (() => {
-  const path = window.location.pathname || '/';
-  const publicPaths = new Set(['/login.html', '/register.html', '/share.html', '/docs.html', '/', '/index.html']);
-  // allow share short URLs (/s/...) and static asset requests
-  if (path.startsWith('/s/')) return;
-  if (path.startsWith('/static/') || /\.(css|js|png|svg|ico|json)$/.test(path)) return;
-  if (!publicPaths.has(path) && !isLoggedIn()) {
-    window.location.href = '/login.html';
-  }
+  // Theme state setup can go here or let global handle it
 })();
 
 window.authFetch = authFetch;

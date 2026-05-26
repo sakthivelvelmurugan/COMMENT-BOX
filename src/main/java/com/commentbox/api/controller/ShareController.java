@@ -18,7 +18,7 @@ public class ShareController {
     private final CommentHistoryRepository commentHistoryRepository;
 
     @PostMapping("/api/v1/history/{id}/share")
-    public ResponseEntity<?> share(@PathVariable Long id) {
+    public ResponseEntity<?> share(jakarta.servlet.http.HttpServletRequest request, @PathVariable Long id) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         if (id == null) throw new ApiException("Invalid ID", 400);
         CommentHistory h = commentHistoryRepository.findById(id).orElseThrow(() -> new ApiException("Not found", 404));
@@ -27,7 +27,17 @@ public class ShareController {
         h.setShareUuid(uuid);
         h.setIsShared(true);
         commentHistoryRepository.save(h);
-        return ResponseEntity.ok().body(java.util.Map.of("shareUrl", "https://commentbox.app/s/" + uuid));
+        
+        String scheme = request.getScheme();
+        String host = request.getHeader("Host");
+        String shareUrl = scheme + "://" + host + "/s/" + uuid;
+        
+        return ResponseEntity.ok().body(java.util.Map.of("shareUrl", shareUrl));
+    }
+
+    @GetMapping("/s/{uuid}")
+    public void forwardShared(jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) throws Exception {
+        request.getRequestDispatcher("/share.html").forward(request, response);
     }
 
     @GetMapping("/api/s/{uuid}")

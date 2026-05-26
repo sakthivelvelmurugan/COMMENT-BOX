@@ -1,4 +1,4 @@
-﻿/* ===================================================
+/* ===================================================
    comment-box — script.js
    Handles: theme, language tabs, editor, API calls
 =================================================== */
@@ -447,6 +447,11 @@ async function setupEditor() {
     lineNumbersEl.style.transform = `translateY(-${codeInputEl.scrollTop}px)`;
   });
 
+  const outputDisplayEl = document.getElementById('outputDisplay');
+  outputDisplayEl?.addEventListener('scroll', () => {
+    outLineNumbersEl.style.transform = `translateY(-${outputDisplayEl.scrollTop}px)`;
+  });
+
   pasteBtnEl?.addEventListener('click', async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -469,6 +474,10 @@ async function setupEditor() {
     outCharCountEl.textContent = '';
     if (copyBtnEl) copyBtnEl.disabled = true;
     if (downloadBtnEl) downloadBtnEl.disabled = true;
+    if (shareBtnEl) {
+      shareBtnEl.disabled = true;
+      shareBtnEl.hidden = true;
+    }
   });
 
   const tabs = Array.from(document.querySelectorAll('.lang-tab'));
