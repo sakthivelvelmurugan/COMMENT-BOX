@@ -28,6 +28,19 @@ function showToast(message, isError = false) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+async function parseJsonResponse(response) {
+  const contentType = response.headers.get('content-type') || '';
+  const text = await response.text();
+  if (contentType.includes('application/json')) {
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { message: text };
+    }
+  }
+  return { message: text || response.statusText };
+}
+
 function renderLineNumbers(textarea, container) {
   const count = textarea.value ? textarea.value.split('\n').length : 1;
   container.innerHTML = Array.from({ length: count }, (_, i) => `<span>${i + 1}</span>`).join('');
@@ -360,8 +373,8 @@ function setupAuth() {
       const errPanel = document.getElementById('loginError');
       try {
         const res = await authFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Login failed');
+        const data = await parseJsonResponse(res);
+        if (!res.ok) throw new Error(data.message || `Login failed (${res.status})`);
         localStorage.setItem('cb-token', data.token);
         window.location.href = '/dashboard.html';
       } catch (err) {
@@ -385,8 +398,8 @@ function setupAuth() {
       }
       try {
         const res = await authFetch('/auth/register', { method: 'POST', body: JSON.stringify({ email, password }) });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Register failed');
+        const data = await parseJsonResponse(res);
+        if (!res.ok) throw new Error(data.message || `Register failed (${res.status})`);
         localStorage.setItem('cb-token', data.token);
         window.location.href = '/dashboard.html';
       } catch (err) {

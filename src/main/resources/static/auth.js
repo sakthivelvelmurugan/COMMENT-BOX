@@ -33,6 +33,7 @@ async function authFetch(url, options = {}) {
   const token = getToken();
   const headers = options.headers ? new Headers(options.headers) : new Headers();
   if (token) headers.set('Authorization', 'Bearer ' + token);
+  headers.set('Accept', 'application/json');
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
