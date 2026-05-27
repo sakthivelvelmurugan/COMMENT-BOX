@@ -8,6 +8,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cb-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 <body data-page="editor">
 
@@ -34,7 +40,6 @@
       </nav>
 
       <div class="nav-actions">
-        <span class="nav-user" id="navUser"></span>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
           <span class="theme-icon sun">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -50,7 +55,6 @@
             </svg>
           </span>
         </button>
-        <button id="logoutBtn" class="btn-ghost" type="button">Logout</button>
       </div>
     </div>
   </header>
@@ -111,7 +115,10 @@
 
       <div class="editor-divider">
         <button class="generate-btn" id="generateBtn" type="button">
-          <span class="generate-btn-inner">Generate</span>
+          <span class="generate-btn-inner">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5,3 19,12 5,21"/></svg>
+            <span class="btn-label">Go</span>
+          </span>
           <span class="generate-spinner" id="generateSpinner" aria-hidden="true"></span>
         </button>
       </div>
@@ -122,7 +129,7 @@
           <div class="pane-actions">
             <button class="icon-btn" type="button" id="copyBtn" disabled>Copy</button>
             <button class="icon-btn" type="button" id="downloadBtn" disabled>Download</button>
-            <button class="icon-btn" type="button" id="shareBtn" disabled style="display:none">Share</button>
+            <button class="icon-btn" type="button" id="shareBtn" disabled hidden>Share</button>
           </div>
         </div>
         <div class="code-area-wrap output-wrap">

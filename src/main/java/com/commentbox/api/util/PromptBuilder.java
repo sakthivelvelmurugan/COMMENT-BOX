@@ -26,7 +26,7 @@ public class PromptBuilder {
 
     public String buildPrompt(String language, String style, String density, String code) {
         String languageLabel = LANGUAGE_LABEL.getOrDefault(language.toLowerCase(), language);
-        String styleInstruction = STYLE_INSTRUCTION.getOrDefault(style.toLowerCase(), STYLE_INSTRUCTION.get("normal"));
+        String styleInstruction = STYLE_INSTRUCTION.getOrDefault(style.toLowerCase(), STYLE_INSTRUCTION.get("inline"));
         String densityInstruction = DENSITY_INSTRUCTION.getOrDefault(density.toLowerCase(), DENSITY_INSTRUCTION.get("normal"));
 
         return "You are an expert " + languageLabel + " developer and technical writer.\n\n"

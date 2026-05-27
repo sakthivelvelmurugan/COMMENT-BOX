@@ -50,6 +50,7 @@ public class HistoryController {
     }
 
     @DeleteMapping("/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Void> deleteOne(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long id) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new ApiException("User not found"));
         historyRepo.findByIdAndUser(id, user).orElseThrow(() -> new ApiException("Not found", 404));
@@ -58,6 +59,7 @@ public class HistoryController {
     }
 
     @DeleteMapping
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Void> deleteAll(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow(() -> new ApiException("User not found"));
         historyRepo.deleteAllByUser(user);

@@ -250,6 +250,9 @@ body {
 }
 [data-theme="dark"] .hero-highlight {
   background: linear-gradient(135deg, #ffffff 0%, #8a8a84 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .hero-sub {
@@ -415,7 +418,7 @@ body {
   background: var(--surface2);
   border-right: 1px solid var(--border);
   font-family: var(--font-code);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
   color: var(--text-muted);
   text-align: right;
@@ -428,8 +431,8 @@ body {
 .line-numbers span {
   display: block;
   padding: 0 8px;
-  height: 19.2px;
-  line-height: 19.2px;
+  height: 20.8px;
+  line-height: 20.8px;
 }
 
 .code-textarea {
@@ -520,8 +523,8 @@ body {
 }
 
 .generate-btn {
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
   background: var(--accent);
   color: var(--accent-fg);
@@ -537,7 +540,8 @@ body {
   transition: background var(--transition), transform 0.15s, box-shadow var(--transition);
   box-shadow: 0 2px 8px rgba(0,0,0,.18);
   flex-direction: column;
-  gap: 0;
+  gap: 3px;
+  overflow: hidden;
 }
 .generate-btn:hover {
   background: var(--accent-hover);
