@@ -90,37 +90,33 @@ function buildPrompt(lang, code, style, density) {
 
 function setLoading(on, elements) {
   if (!elements.generateBtn) return;
+  const progress = document.getElementById('genProgress');
+  const bar = document.getElementById('genProgressBar');
   if (on) {
     elements.generateBtn.disabled = true;
     elements.generateInner?.classList.add('hidden');
     elements.generateSpinner?.classList.add('visible');
     elements.paneOutput?.classList.add('loading');
+    if (progress && bar) {
+      progress.hidden = false;
+      bar.style.transition = 'none';
+      bar.style.width = '0%';
+      setTimeout(() => {
+        bar.style.transition = 'width 10s cubic-bezier(0.1, 0.5, 0.2, 1)';
+        bar.style.width = '90%';
+      }, 50);
+    }
   } else {
     elements.generateBtn.disabled = false;
     elements.generateInner?.classList.remove('hidden');
     elements.generateSpinner?.classList.remove('visible');
     elements.paneOutput?.classList.remove('loading');
+    if (progress && bar) {
+      bar.style.transition = 'width 0.2s ease-out';
+      bar.style.width = '100%';
+      setTimeout(() => { progress.hidden = true; bar.style.width = '0%'; }, 400);
+    }
   }
-}
-
-function renderUsageBar(data) {
-  const strip = document.getElementById('usageStrip');
-  const fill = document.getElementById('usageBarFill');
-  const label = document.getElementById('usageLabel');
-  if (!strip || !fill || !label || !data) return;
-  if (data.hasByok) {
-    strip.hidden = true;
-    return;
-  }
-  strip.hidden = false;
-  const dailyLimit = data.dailyLimit || 10;
-  const used = data.usedToday || (dailyLimit - Math.max(0, data.remaining || 0));
-  const pct = Math.min(100, Math.round((used / dailyLimit) * 100));
-  fill.style.width = pct + '%';
-  if (used >= dailyLimit) fill.style.background = '#ef4444';
-  else if (used >= 7) fill.style.background = '#f59e0b';
-  else fill.style.background = '#16a34a';
-  label.textContent = `${used} / ${dailyLimit} free generates used today`;
 }
 
 function showUpgradeModal() {
@@ -286,13 +282,6 @@ async function generateComments(config) {
         density: payload.density
       });
     }
-
-    renderUsageBar({
-      hasByok: !!data.byokActive,
-      dailyLimit: 10,
-      usedToday: (10 - (data.generatesRemaining >= 0 ? data.generatesRemaining : 0)),
-      remaining: data.generatesRemaining
-    });
   } catch (err) {
     showToast(err.message || 'Something went wrong', true);
     console.error('[CommentBox]', err);
@@ -444,12 +433,48 @@ async function setupEditor() {
   }
 
   renderLineNumbers(codeInputEl, lineNumbersEl);
-  charCountEl.textContent = '0 lines';
 
   codeInputEl.addEventListener('input', () => {
     renderLineNumbers(codeInputEl, lineNumbersEl);
-    const lines = codeInputEl.value.split('\n').length;
-    charCountEl.textContent = `${lines} line${lines !== 1 ? 's' : ''}`;
+    if (!codeInputEl.value.trim()) {
+      charCountEl.hidden = true;
+    } else {
+      charCountEl.hidden = false;
+      const lines = codeInputEl.value.split('\n').length;
+      charCountEl.textContent = `${lines} line${lines !== 1 ? 's' : ''}`;
+    }
+  });
+
+  // Resizer Logic
+  const editorGrid = document.getElementById('editorGrid');
+  const divider = document.getElementById('editorDivider');
+  let isResizing = false;
+
+  divider?.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isResizing = true;
+    divider.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing || !editorGrid) return;
+    const containerRect = editorGrid.getBoundingClientRect();
+    const pointerRelativeX = e.clientX - containerRect.left;
+    const minWidth = 280;
+    const maxWidth = editorGrid.clientWidth - minWidth;
+    const newBasis = Math.max(minWidth, Math.min(pointerRelativeX, maxWidth));
+    editorGrid.style.gridTemplateColumns = `${newBasis}px auto 1fr`;
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isResizing) {
+      isResizing = false;
+      divider?.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
   });
 
   codeInputEl.addEventListener('scroll', () => {
@@ -477,7 +502,6 @@ async function setupEditor() {
   clearBtnEl?.addEventListener('click', () => {
     codeInputEl.value = '';
     codeInputEl.dispatchEvent(new Event('input'));
-    charCountEl.textContent = '0 lines';
     if (emptyStateEl) emptyStateEl.hidden = false;
     if (outputPreEl) outputPreEl.hidden = true;
     outputPreEl.textContent = '';
@@ -572,14 +596,7 @@ async function setupEditor() {
     emptyState: emptyStateEl
   });
 
-  try {
-    const res = await authFetch('/api/v1/usage');
-    if (res.ok) {
-      renderUsageBar(await res.json());
-    }
-  } catch (err) {
-    console.warn('Failed to load usage', err);
-  }
+  // Usage fetch removed
 }
 
 function setupGlobal() {
