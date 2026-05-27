@@ -8,6 +8,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
 </head>
 <body data-page="login">
   <header class="navbar">
@@ -26,7 +34,6 @@
       <button class="nav-toggle" id="navToggle" aria-label="Open navigation"><span></span><span></span><span></span></button>
       <nav class="nav-links">
         <a href="/index.html" class="nav-link" data-page="editor">Editor</a>
-        <a href="/dashboard.html" class="nav-link" data-page="dashboard">Dashboard</a>
         <a href="/docs.html" class="nav-link" data-page="docs">Docs</a>
       </nav>
       <div class="nav-actions">

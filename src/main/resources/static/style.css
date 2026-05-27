@@ -407,7 +407,7 @@ body {
 .code-area-wrap {
   flex: 1;
   display: flex;
-  overflow: hidden;
+  overflow: auto;
   position: relative;
 }
 
@@ -423,11 +423,14 @@ body {
   color: var(--text-muted);
   text-align: right;
   user-select: none;
-  overflow: hidden;
+  overflow: auto; /* must be scrollable for scrollTop sync to work */
+  pointer-events: none; /* hide scrollbar interaction from user */
+  scrollbar-width: none; /* Firefox: hide scrollbar visually */
   display: flex;
   flex-direction: column;
   gap: 0;
 }
+.line-numbers::-webkit-scrollbar { display: none; } /* Chrome/Safari: hide scrollbar */
 .line-numbers span {
   display: block;
   padding: 0 8px;
@@ -457,9 +460,11 @@ body {
   flex: 1;
   overflow: auto;
   position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 
-.empty-state {
+/* Empty state inside editor panes only */
+.code-area-wrap .empty-state {
   position: absolute;
   inset: 0;
   display: flex;
@@ -473,7 +478,7 @@ body {
   padding: 24px;
   pointer-events: none;
 }
-.empty-state p { max-width: 200px; }
+.code-area-wrap .empty-state p { max-width: 200px; }
 
 .output-pre {
   margin: 0;
@@ -483,8 +488,9 @@ body {
   line-height: 1.6;
   color: var(--text);
   white-space: pre;
-  overflow: visible;
+  overflow: auto;
   background: transparent;
+  -webkit-overflow-scrolling: touch;
 }
 
 .pane-footer {
@@ -723,6 +729,52 @@ body {
   .apikey-inner { flex-direction: column; align-items: flex-start; }
   .apikey-hint { margin-left: 0; }
   .hero { padding: 32px 24px 20px; }
+  .code-textarea { -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+  .apikey-card { flex-direction: column; align-items: flex-start; }
+  .apikey-field-wrap { max-width: 100%; width: 100%; }
+}
+
+/* ===== EXTRA-SMALL SCREENS (320px – 480px) ===== */
+@media (max-width: 480px) {
+  .hero { padding: 24px 16px 16px; }
+  .hero-title { font-size: clamp(22px, 7vw, 32px); }
+  .hero-sub { font-size: 13px; }
+
+  .editor-shell { padding: 0 12px; margin-bottom: 20px; }
+  .pane { min-height: 200px; }
+
+  /* Controls: stack vertically on very small screens */
+  .controls-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+  .lang-tabs { flex-wrap: wrap; width: 100%; justify-content: flex-start; }
+  .lang-tab { font-size: 12px; padding: 5px 10px; flex: 1; justify-content: center; }
+  .controls-right { flex-direction: column; align-items: stretch; gap: 6px; width: 100%; margin-left: 0; }
+  .control-group { flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; }
+  .select-styled { flex: 1; }
+
+  /* Reduce line number gutter on mobile */
+  .line-numbers { width: 32px; font-size: 11px; }
+  .line-numbers span { padding: 0 5px; }
+  .code-textarea { font-size: 12px; padding: 10px 10px; }
+  .output-pre { font-size: 12px; padding: 10px 10px; }
+
+  /* Pane header */
+  .pane-header { padding: 8px 10px; }
+  .pane-footer { padding: 5px 10px; }
+
+  /* API key section */
+  .apikey-row { padding: 12px 14px; }
+  .apikey-card { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .apikey-field-wrap { max-width: 100%; min-width: unset; width: 100%; }
+
+  /* Footer */
+  .footer { font-size: 11px; gap: 6px; }
+
+  /* Modal */
+  .modal-card { padding: 16px; }
+
+  /* Nav */
+  .nav-inner { padding: 0 12px; gap: 8px; }
+  .logo-text { font-size: 15px; }
 }
 
 /* Missing small utility styles used by HTML */
@@ -769,20 +821,25 @@ body {
 
 /* ===== UPGRADE MODAL ===== */
 .modal-overlay {
-  min-height: 120px; /* contribute to layout height, not fixed */
+  position: fixed;
+  inset: 0;
+  z-index: 500;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.32);
+  background: rgba(0,0,0,0.48);
   padding: 24px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 .modal-card {
   background: var(--surface);
   border-radius: var(--radius-md);
-  padding: 20px;
-  max-width: 520px;
+  padding: 24px;
+  max-width: 480px;
   width: 100%;
   box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
 }
 
 /* ===== GHOST BUTTON ===== */
@@ -805,7 +862,6 @@ body {
 
 /* ===== AUTH PAGES ===== */
 .form-shell,
-.dashboard-shell,
 .share-shell {
   max-width: 980px;
   margin: 0 auto;
@@ -945,100 +1001,7 @@ body {
   font-size: 13px;
 }
 
-/* ===== DASHBOARD ===== */
-.dashboard-shell {
-  display: grid;
-  gap: 26px;
-  padding-top: 32px;
-}
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 20px 22px;
-  box-shadow: var(--shadow-sm);
-}
-.stat-label {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  margin-bottom: 14px;
-}
-.stat-value {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text);
-}
-.history-list {
-  display: grid;
-  gap: 16px;
-}
-.history-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
-  display: grid;
-  gap: 14px;
-}
-.history-card .badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: var(--surface2);
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 600;
-}
-.history-card .meta {
-  color: var(--text-sec);
-  font-size: 13px;
-}
-.history-card .preview {
-  background: var(--highlight);
-  border-radius: var(--radius-sm);
-  padding: 14px;
-  overflow: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-  margin: 0;
-}
-.history-card .actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 14px 0;
-}
-.pagination button {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--text);
-  padding: 8px 14px;
-  cursor: pointer;
-}
-.pagination button:hover {
-  background: var(--surface2);
-}
-
-.empty-state {
-  min-height: 220px;
-}
+/* Dashboard CSS removed — dashboard system has been deleted */
 
 /* ===== SHARE PAGE ===== */
 .share-shell {
@@ -1086,18 +1049,38 @@ body {
   min-height: 260px;
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 960px) {
-  .stats-row { grid-template-columns: 1fr; }
-  .dashboard-shell { padding: 24px; }
-}
+
 @media (max-width: 768px) {
-  .nav-links { display: none; position: absolute; top: 70px; left: 0; right: 0; background: var(--surface); flex-direction: column; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+  /* Nav dropdown: fixed below navbar, full-width */
+  .nav-links {
+    display: none;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    background: var(--surface);
+    flex-direction: column;
+    padding: 12px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+  }
   .nav-links.open { display: flex; }
-  .nav-toggle { display: inline-flex; width: 40px; height: 40px; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
+  .nav-toggle {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-left: auto;
+  }
   .nav-toggle span { width: 20px; height: 2px; background: var(--text); border-radius: 2px; display: block; margin: 3px 0; }
   .nav-actions { margin-left: 0; }
-  .nav-inner { flex-wrap: wrap; padding: 0 18px; height: auto; gap: 12px; }
+  .nav-inner { flex-wrap: nowrap; padding: 0 18px; height: 60px; gap: 8px; }
   .editor-grid { grid-template-columns: 1fr; }
   .editor-divider { width: 100%; height: 60px; border-left: none; border-right: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
   .pane { min-height: 260px; }

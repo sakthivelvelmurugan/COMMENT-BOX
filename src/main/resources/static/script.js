@@ -278,6 +278,15 @@ async function generateComments(config) {
     window.lastHistoryId = data.historyId;
     showToast('Comments generated ✓');
 
+    // Google Analytics: track successful generation event
+    if (typeof gtag === 'function') {
+      gtag('event', 'generate_comments', {
+        language: currentLang,
+        style: payload.style,
+        density: payload.density
+      });
+    }
+
     renderUsageBar({
       hasByok: !!data.byokActive,
       dailyLimit: 10,
@@ -376,7 +385,7 @@ function setupAuth() {
         const data = await parseJsonResponse(res);
         if (!res.ok) throw new Error(data.message || `Login failed (${res.status})`);
         localStorage.setItem('cb-token', data.token);
-        window.location.href = '/dashboard.html';
+        window.location.href = '/index.html';
       } catch (err) {
         if (errPanel) { errPanel.hidden = false; errPanel.textContent = err.message || 'Login failed'; }
         showToast(err.message || 'Login failed', true);
@@ -401,7 +410,7 @@ function setupAuth() {
         const data = await parseJsonResponse(res);
         if (!res.ok) throw new Error(data.message || `Register failed (${res.status})`);
         localStorage.setItem('cb-token', data.token);
-        window.location.href = '/dashboard.html';
+        window.location.href = '/index.html';
       } catch (err) {
         if (errPanel) { errPanel.hidden = false; errPanel.textContent = err.message || 'Register failed'; }
         showToast(err.message || 'Register failed', true);
@@ -444,12 +453,14 @@ async function setupEditor() {
   });
 
   codeInputEl.addEventListener('scroll', () => {
-    lineNumbersEl.style.transform = `translateY(-${codeInputEl.scrollTop}px)`;
+    // Sync line-number gutter scroll with the textarea scroll
+    lineNumbersEl.scrollTop = codeInputEl.scrollTop;
   });
 
   const outputDisplayEl = document.getElementById('outputDisplay');
   outputDisplayEl?.addEventListener('scroll', () => {
-    outLineNumbersEl.style.transform = `translateY(-${outputDisplayEl.scrollTop}px)`;
+    // Sync output line-number gutter with output display scroll
+    outLineNumbersEl.scrollTop = outputDisplayEl.scrollTop;
   });
 
   pasteBtnEl?.addEventListener('click', async () => {
