@@ -891,27 +891,67 @@ body {
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .editor-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto auto !important;
   }
   .editor-divider {
-    width: 100%;
-    height: 60px;
+    width: 100% !important;
+    height: 12px;
     border-left: none;
     border-right: none;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
+    cursor: default;
+  }
+  .resizer-handle {
+    width: 32px;
+    height: 4px;
+    background: var(--border-med);
+  }
+  .editor-divider:hover .resizer-handle, .editor-divider.dragging .resizer-handle {
+    transform: none;
+    background: var(--border-med);
   }
   .pane { min-height: 280px; }
   .controls-bar { gap: 10px; }
-  .controls-right { margin-left: 0; flex-wrap: wrap; gap: 8px; }
-  .nav-links { display: none; }
+  .controls-right { margin-left: 0; flex-wrap: wrap; gap: 8px; justify-content: space-between; width: 100%; }
   .apikey-inner { flex-direction: column; align-items: flex-start; }
   .apikey-hint { margin-left: 0; }
   .hero { padding: 32px 24px 20px; }
   .code-textarea { -webkit-overflow-scrolling: touch; touch-action: pan-y; }
   .apikey-card { flex-direction: column; align-items: flex-start; }
   .apikey-field-wrap { max-width: 100%; width: 100%; }
+
+  /* Nav dropdown: fixed below navbar, full-width */
+  .nav-links {
+    display: none;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    background: var(--surface);
+    flex-direction: column;
+    padding: 12px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+  }
+  .nav-links.open { display: flex; }
+  .nav-toggle {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-left: auto;
+  }
+  .nav-toggle span { width: 20px; height: 2px; background: var(--text); border-radius: 2px; display: block; margin: 3px 0; }
+  .nav-actions { margin-left: 0; }
+  .nav-inner { flex-wrap: nowrap; padding: 0 18px; height: 60px; gap: 8px; }
 }
 
 /* ===== EXTRA-SMALL SCREENS (320px – 480px) ===== */
@@ -938,6 +978,9 @@ body {
   /* Pane header */
   .pane-header { padding: 8px 10px; }
   .pane-footer { padding: 5px 10px; }
+  .icon-btn { font-size: 0; padding: 6px; }
+  .icon-btn svg { margin: 0; }
+  .pane-action-divider { margin: 0 2px; }
 
   /* API key section */
   .apikey-row { padding: 12px 14px; }
@@ -1276,43 +1319,4 @@ body {
   min-height: 260px;
 }
 
-
-@media (max-width: 768px) {
-  /* Nav dropdown: fixed below navbar, full-width */
-  .nav-links {
-    display: none;
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    z-index: 99;
-    background: var(--surface);
-    flex-direction: column;
-    padding: 12px 20px 16px;
-    border-bottom: 1px solid var(--border);
-    box-shadow: var(--shadow-md);
-  }
-  .nav-links.open { display: flex; }
-  .nav-toggle {
-    display: inline-flex;
-    width: 40px;
-    height: 40px;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    margin-left: auto;
-  }
-  .nav-toggle span { width: 20px; height: 2px; background: var(--text); border-radius: 2px; display: block; margin: 3px 0; }
-  .nav-actions { margin-left: 0; }
-  .nav-inner { flex-wrap: nowrap; padding: 0 18px; height: 60px; gap: 8px; }
-  .editor-grid { grid-template-columns: 1fr; }
-  .editor-divider { width: 100%; height: 60px; border-left: none; border-right: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  .pane { min-height: 260px; }
-  .controls-bar { flex-direction: column; align-items: stretch; }
-  .controls-right { justify-content: space-between; width: 100%; }
-  .apikey-inner { flex-direction: column; align-items: stretch; }
-}
 

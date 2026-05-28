@@ -585,6 +585,7 @@ async function setupEditor() {
   let isResizing = false;
 
   divider?.addEventListener('mousedown', (e) => {
+    if (window.innerWidth <= 768) return;
     e.preventDefault();
     isResizing = true;
     divider.classList.add('dragging');
