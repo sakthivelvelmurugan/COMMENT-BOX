@@ -67,9 +67,9 @@
   </header>
 
   <section class="hero">
-    <div class="hero-badge"><span class="badge-dot"></span>Powered by GPT-4o-mini</div>
+    <div class="hero-badge"><span class="badge-dot"></span>AI-assisted code comments</div>
     <h1 class="hero-title">Add comments to <span class="hero-highlight">any code, instantly.</span></h1>
-    <p class="hero-sub">Paste your code, choose your language, and let CommentBox annotate your logic in a developer-friendly style.</p>
+    <p class="hero-sub">Works with Java, Python, and C++.</p>
   </section>
 
   <main class="editor-shell">
@@ -87,6 +87,7 @@
             <option value="block">Block</option>
             <option value="jsdoc">Javadoc</option>
           </select>
+          <p class="select-description" id="styleDescription">Short comments on the same line as code.</p>
         </div>
         <div class="control-group">
           <label class="ctrl-label" for="density">Density</label>
@@ -95,6 +96,7 @@
             <option value="verbose">Verbose</option>
             <option value="minimal">Minimal</option>
           </select>
+          <p class="select-description" id="densityDescription">Balanced coverage of key logic.</p>
         </div>
         <!-- GO button moved to toolbar — primary action, always visible -->
         <button class="toolbar-generate-btn" id="generateBtn" type="button" aria-label="Generate comments (Ctrl+Enter)">
@@ -163,7 +165,12 @@
         <div class="code-area-wrap output-wrap">
           <div class="line-numbers" id="outLineNumbers" aria-hidden="true"></div>
           <div class="output-display" id="outputDisplay" aria-live="polite">
-            <div class="empty-state" id="emptyState"><p>Your commented code will appear here</p></div>
+            <div class="empty-state" id="emptyState">
+              <div class="empty-icon" aria-hidden="true">{ }</div>
+              <p>Your commented code will appear here</p>
+              <p class="empty-hint">Paste code on the left, then click Generate.</p>
+              <button class="empty-action" type="button" id="tryExampleBtn">Try an example →</button>
+            </div>
             <pre id="outputPre" class="output-pre" hidden></pre>
           </div>
         </div>
@@ -171,7 +178,7 @@
           <span class="line-count" id="outCharCount"></span>
           <span class="model-pill">
             <span class="model-pill-label">Model</span>
-            <span class="model-pill-value">gpt-4o-mini · openrouter</span>
+            <span class="model-pill-value">gpt-4o-mini via OpenRouter</span>
           </span>
         </div>
       </div>
@@ -179,7 +186,7 @@
 
     <section class="apikey-row">
       <div class="apikey-card">
-        <div class="apikey-card-header"><div class="apikey-icon" aria-hidden="true">🔒</div><div><p class="apikey-title">OpenRouter API Key</p><p class="apikey-subtitle">Stored securely; raw API key is never returned once saved.</p></div></div>
+        <div class="apikey-card-header"><div class="apikey-icon" aria-hidden="true">🔒</div><div><p class="apikey-title">OpenRouter API Key <a class="api-help-link" href="https://openrouter.ai/keys" target="_blank" rel="noopener">How do I get a key?</a></p><p class="apikey-subtitle">Stored securely; raw API key is never returned once saved.</p></div></div>
         <div class="apikey-field-wrap"></div>
       </div>
     </section>
@@ -189,13 +196,14 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <!-- UPGRADE MODAL -->
-  <div class="modal-overlay" id="upgradeModal" style="display:none;">
+  <div class="modal-overlay" id="upgradeModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="upgradeModalTitle">
     <div class="modal-card">
-      <h3>Daily limit reached</h3>
-      <p>You've used all 10 free generates for today. Add your own OpenRouter API key for unlimited generates — your key, your usage.</p>
-      <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end;">
+      <button class="modal-close" id="closeUpgradeBtn" type="button" aria-label="Close">×</button>
+      <h3 id="upgradeModalTitle">Daily limit reached</h3>
+      <p class="modal-copy">You've used all 10 free generates for today. Add your own OpenRouter API key for unlimited generates — your key, your usage.</p>
+      <div class="modal-actions">
         <button class="btn-primary" id="focusApiKeyBtn">Add my API key</button>
-        <button class="btn-ghost" id="closeUpgradeBtn">Maybe later</button>
+        <button class="text-link" id="closeUpgradeBtnFallback" type="button">Maybe later</button>
       </div>
     </div>
   </div>

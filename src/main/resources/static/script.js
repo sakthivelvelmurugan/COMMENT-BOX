@@ -62,7 +62,133 @@ function stripCodeFences(text) {
     .trim();
 }
 
-function buildPrompt(lang, code, style, density) {
+function updateDropdownDescriptions(style, density) {
+  const styleMap = {
+    inline: 'Short comments on the same line as code',
+    block: 'Multi-line comments above each function',
+    jsdoc: 'Formal /** */ doc comments for each method'
+  };
+  const densityMap = {
+    normal: 'Balanced coverage of key logic',
+    verbose: 'Every line explained in detail',
+    minimal: 'Only complex sections annotated'
+  };
+  const styleEl = document.getElementById('styleDescription');
+  const densityEl = document.getElementById('densityDescription');
+  if (styleEl) styleEl.textContent = styleMap[style] || '';
+  if (densityEl) densityEl.textContent = densityMap[density] || '';
+}
+
+function isValidOpenRouterKey(key) {
+  return /^(sk|or)-[A-Za-z0-9]{10,}$/i.test(key);
+}
+
+function renderKeyState(data, options = {}) {
+  const wrap = document.querySelector('.apikey-field-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  if (data && data.hasKey) {
+    const badge = document.createElement('div');
+    badge.className = 'key-badge';
+    badge.textContent = data.keyHint || '••••';
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn-ghost';
+    removeBtn.textContent = 'Remove';
+    removeBtn.type = 'button';
+    removeBtn.addEventListener('click', deleteKey);
+    wrap.appendChild(badge);
+    if (options.message) {
+      const feedback = document.createElement('div');
+      feedback.className = 'apikey-feedback success';
+      feedback.innerHTML = `<span class="feedback-dot"></span>${options.message}`;
+      wrap.appendChild(feedback);
+    }
+    wrap.appendChild(removeBtn);
+    return;
+  }
+
+  const group = document.createElement('div');
+  group.className = 'password-group';
+
+  const input = document.createElement('input');
+  input.type = 'password';
+  input.id = 'apiKeyInput';
+  input.className = 'apikey-input';
+  input.placeholder = 'sk-or-v1-••••••••';
+  input.autocomplete = 'off';
+
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'password-toggle';
+  toggle.textContent = 'Show';
+  toggle.addEventListener('click', () => {
+    if (input.type === 'password') {
+      input.type = 'text';
+      toggle.textContent = 'Hide';
+    } else {
+      input.type = 'password';
+      toggle.textContent = 'Show';
+    }
+  });
+
+  group.appendChild(input);
+  group.appendChild(toggle);
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn-primary';
+  saveBtn.type = 'button';
+  saveBtn.textContent = 'Save';
+  saveBtn.addEventListener('click', saveKey);
+
+  const feedback = document.createElement('div');
+  feedback.className = 'apikey-feedback';
+  feedback.id = 'apiKeyFeedback';
+  if (options.message) {
+    feedback.classList.add(options.type === 'success' ? 'success' : 'error');
+    feedback.innerHTML = `<span class="feedback-dot"></span>${options.message}`;
+  }
+
+  wrap.appendChild(group);
+  wrap.appendChild(saveBtn);
+  wrap.appendChild(feedback);
+}
+
+function setApiKeyFeedback(message, type = 'error') {
+  const feedback = document.getElementById('apiKeyFeedback');
+  if (!feedback) return;
+  feedback.className = `apikey-feedback ${type}`;
+  feedback.innerHTML = `<span class="feedback-dot"></span>${message}`;
+}
+
+async function saveKey() {
+  const input = document.getElementById('apiKeyInput');
+  if (!input) return;
+  const key = input.value.trim();
+  if (!key) {
+    setApiKeyFeedback('Enter an API key first', 'error');
+    return;
+  }
+  if (!isValidOpenRouterKey(key)) {
+    setApiKeyFeedback('Key format looks invalid', 'error');
+    return;
+  }
+  try {
+    const res = await authFetch('/api/v1/keys', {
+      method: 'POST',
+      body: JSON.stringify({ provider: 'openrouter', apiKey: key })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Save failed');
+    renderKeyState(data, { message: 'Key saved', type: 'success' });
+    showToast('API key saved');
+  } catch (err) {
+    setApiKeyFeedback(err.message || 'Failed to save key', 'error');
+    showToast(err.message || 'Failed to save key', true);
+  }
+}
+
+async function deleteKey() {
   const styleHint = {
     inline: 'Use concise inline comments (// for Java/C++, # for Python) placed beside or above each line.',
     block: 'Use descriptive block comments above each logical section or function.',
@@ -427,6 +553,8 @@ async function setupEditor() {
   const clearBtnEl = document.getElementById('clearBtn');
   const commentStyleEl = document.getElementById('commentStyle');
   const densityEl = document.getElementById('density');
+  const styleDescEl = document.getElementById('styleDescription');
+  const densityDescEl = document.getElementById('densityDescription');
 
   if (!codeInputEl || !outputPreEl || !generateBtnEl || !lineNumbersEl || !commentStyleEl || !densityEl) {
     return;
@@ -499,6 +627,17 @@ async function setupEditor() {
     }
   });
 
+  document.getElementById('tryExampleBtn')?.addEventListener('click', () => {
+    const sample = `public class Example {
+  public static int add(int a, int b) {
+    return a + b;
+  }
+}`;
+    codeInputEl.value = sample;
+    codeInputEl.dispatchEvent(new Event('input'));
+    showToast('Sample code loaded');
+  });
+
   clearBtnEl?.addEventListener('click', () => {
     codeInputEl.value = '';
     codeInputEl.dispatchEvent(new Event('input'));
@@ -527,6 +666,10 @@ async function setupEditor() {
       currentLang = tab.dataset.lang;
     });
   });
+
+  updateDropdownDescriptions(commentStyleEl.value, densityEl.value);
+  commentStyleEl.addEventListener('change', () => updateDropdownDescriptions(commentStyleEl.value, densityEl.value));
+  densityEl.addEventListener('change', () => updateDropdownDescriptions(commentStyleEl.value, densityEl.value));
 
   generateBtnEl.addEventListener('click', () => generateComments({
     codeInput: codeInputEl,
@@ -582,6 +725,7 @@ async function setupEditor() {
 
   document.getElementById('focusApiKeyBtn')?.addEventListener('click', focusApiKey);
   document.getElementById('closeUpgradeBtn')?.addEventListener('click', closeUpgradeModal);
+  document.getElementById('closeUpgradeBtnFallback')?.addEventListener('click', closeUpgradeModal);
 
   restoreFromHistory({
     codeInput: codeInputEl,
@@ -625,5 +769,5 @@ document.addEventListener('DOMContentLoaded', () => {
   setupGlobal();
   setupEditor();
   setupAuth();
-  fetchKeyInfo().then(info => { if (info) renderKeyState(info); });
+  fetchKeyInfo().then(info => { renderKeyState(info || { hasKey: false }); });
 });
