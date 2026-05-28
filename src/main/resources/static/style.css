@@ -431,6 +431,7 @@ body {
   grid-template-columns: 1fr auto 1fr;
   gap: 0;
   min-height: 440px;
+  align-items: stretch;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -442,7 +443,7 @@ body {
 .pane {
   display: flex;
   flex-direction: column;
-  min-height: 440px;
+  min-height: 460px;
   overflow: hidden;
 }
 
@@ -478,6 +479,11 @@ body {
   display: flex;
   overflow: auto;
   position: relative;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-top: 0;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: var(--surface);
 }
 
 .line-numbers {
@@ -545,7 +551,10 @@ body {
   font-size: 13px;
   text-align: center;
   padding: 24px;
-  pointer-events: none;
+}
+
+.empty-action {
+  pointer-events: auto;
 }
 .code-area-wrap .empty-state p { max-width: 220px; margin: 0; }
 .empty-line { color: var(--text-muted); }
