@@ -61,8 +61,8 @@ public class CommentService {
                 apiKeyToUse = platformApiKey;
             }
 
-            if (apiKeyToUse == null) {
-                throw new ApiException("API key not configured", 500);
+            if (apiKeyToUse == null || apiKeyToUse.trim().isEmpty()) {
+                throw new ApiException("API key not configured. Please set OPENROUTER_API_KEY or provide your own key in settings.", 500);
             }
             Map<String, Object> payload = Map.of(
                     "model", model,
