@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "java -jar -Dspring.profiles.active=prod /app/app.jar"
+startCommand = "java -Xms64m -Xmx256m -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Dspring.profiles.active=prod -jar /app/app.jar"
 healthcheckPath = "/actuator/health"
 healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"
