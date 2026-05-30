@@ -82,7 +82,12 @@ function updateDropdownDescriptions(style, density) {
 }
 
 function isValidOpenRouterKey(key) {
-  return /^(sk|or)-[A-Za-z0-9]{10,}$/i.test(key);
+  // Accept common OpenRouter key formats like:
+  // - sk-<...>
+  // - sk-or-v1-<...>
+  // - or-v1-<...>
+  // Allow letters, numbers and hyphens after the prefix.
+  return /^(sk(-or)?(-v\d+)?|or(-v\d+)?)-[A-Za-z0-9-]{8,}$/i.test(key);
 }
 
 function getStoredUsageCount() {
