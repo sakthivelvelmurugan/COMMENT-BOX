@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class UsageLimitService {
 
-    public static final int FREE_DAILY_LIMIT = 10;
+    public static final int FREE_DAILY_LIMIT = 5;
 
     private final UserRepository userRepository;
 

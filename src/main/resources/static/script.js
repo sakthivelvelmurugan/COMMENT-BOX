@@ -8,7 +8,7 @@
 let currentLang = 'java';
 let toastTimer;
 let hasOwnApiKey = false;
-const generateLimit = 10;
+const generateLimit = 5;
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
