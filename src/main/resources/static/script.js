@@ -90,6 +90,18 @@ function isValidOpenRouterKey(key) {
   return /^(sk(-or)?(-v\d+)?|or(-v\d+)?)-[A-Za-z0-9-]{8,}$/i.test(key);
 }
 
+function getStoredApiKey() {
+  return localStorage.getItem('cb-openrouter-key') || '';
+}
+
+function setStoredApiKey(key) {
+  localStorage.setItem('cb-openrouter-key', key);
+}
+
+function clearStoredApiKey() {
+  localStorage.removeItem('cb-openrouter-key');
+}
+
 function getStoredUsageCount() {
   return Number(localStorage.getItem('cb-usage-count') || 0);
 }
@@ -133,19 +145,24 @@ function closeSettingsPopover() {
 function renderKeyState(data, options = {}) {
   const wrap = document.querySelector('.apikey-field-wrap');
   if (!wrap) return;
-  hasOwnApiKey = !!(data && data.hasKey);
-  updateUsageStatus(hasOwnApiKey);
+  const storedKey = getStoredApiKey();
+  const hasKey = !!storedKey;
+  hasOwnApiKey = hasKey;
+  updateUsageStatus(hasKey);
   wrap.innerHTML = '';
 
-  if (data && data.hasKey) {
+  if (hasKey) {
     const badge = document.createElement('div');
     badge.className = 'key-badge';
-    badge.textContent = data.keyHint || '••••';
+    const visibleHint = storedKey.length > 8 ? `••••${storedKey.slice(-8)}` : '••••';
+    badge.textContent = visibleHint;
+
     const removeBtn = document.createElement('button');
     removeBtn.className = 'btn-ghost';
     removeBtn.textContent = 'Remove';
     removeBtn.type = 'button';
     removeBtn.addEventListener('click', deleteKey);
+
     wrap.appendChild(badge);
     if (options.message) {
       const feedback = document.createElement('div');
@@ -222,34 +239,15 @@ async function saveKey() {
     setApiKeyFeedback('Key format looks invalid', 'error');
     return;
   }
-  try {
-    const res = await authFetch('/api/v1/keys', {
-      method: 'POST',
-      body: JSON.stringify({ provider: 'openrouter', apiKey: key })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Save failed');
-    renderKeyState(data, { message: 'Key saved', type: 'success' });
-    showToast('API key saved');
-  } catch (err) {
-    setApiKeyFeedback(err.message || 'Failed to save key', 'error');
-    showToast(err.message || 'Failed to save key', true);
-  }
+  setStoredApiKey(key);
+  renderKeyState({ hasKey: true }, { message: 'API key stored locally', type: 'success' });
+  showToast('API key saved locally');
 }
 
 async function deleteKey() {
-  try {
-    const res = await authFetch('/api/v1/keys/openrouter', { method: 'DELETE' });
-    if (res.status === 204) {
-      renderKeyState({ hasKey: false, provider: 'openrouter' });
-      showToast('API key removed');
-      return;
-    }
-    const data = await res.json();
-    throw new Error(data.message || 'Delete failed');
-  } catch (err) {
-    showToast(err.message || 'Failed to delete key', true);
-  }
+  clearStoredApiKey();
+  renderKeyState({ hasKey: false });
+  showToast('API key removed');
 }
 
 function buildPrompt(lang, code, style, density) {
@@ -337,13 +335,9 @@ function focusApiKey() {
 }
 
 async function fetchKeyInfo() {
-  try {
-    const res = await authFetch('/api/v1/keys/openrouter');
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
+  const storedKey = getStoredApiKey();
+  if (!storedKey) return null;
+  return { hasKey: true, keyHint: storedKey.length > 8 ? `••••${storedKey.slice(-8)}` : '••••' };
 }
 
 async function generateComments(config) {
@@ -367,7 +361,8 @@ async function generateComments(config) {
     language: currentLang,
     style: commentStyle.value,
     density: density.value,
-    code
+    code,
+    apiKey: getStoredApiKey() || undefined
   };
 
   try {

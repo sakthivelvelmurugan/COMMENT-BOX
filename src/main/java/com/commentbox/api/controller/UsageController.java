@@ -2,7 +2,6 @@ package com.commentbox.api.controller;
 
 import com.commentbox.api.model.User;
 import com.commentbox.api.repository.UserRepository;
-import com.commentbox.api.service.ApiKeyService;
 import com.commentbox.api.service.UsageLimitService;
 import com.commentbox.api.util.ApiException;
 import com.commentbox.api.model.UsageResponse;
@@ -23,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 public class UsageController {
 
     private final UserRepository userRepository;
-    private final ApiKeyService apiKeyService;
     private final UsageLimitService usageLimitService;
 
     @GetMapping
@@ -31,10 +29,9 @@ public class UsageController {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ApiException("User not found", 401));
 
-        boolean hasByok = apiKeyService.hasActiveKey(email, "openrouter");
         int dailyLimit = UsageLimitService.FREE_DAILY_LIMIT;
         int usedToday = user.getDailyGenerateCount() == null ? 0 : user.getDailyGenerateCount();
-        int remaining = hasByok ? -1 : usageLimitService.getRemainingGenerates(user);
+        int remaining = usageLimitService.getRemainingGenerates(user);
 
         LocalDateTime resetAt = LocalDateTime.now().with(LocalTime.MIDNIGHT).plusDays(1);
         String resetAtStr = resetAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -44,8 +41,8 @@ public class UsageController {
             .usedToday(usedToday)
             .remaining(remaining)
             .resetAt(resetAtStr)
-            .hasByok(hasByok)
-            .byokProvider(hasByok ? "openrouter" : null)
+            .hasByok(false)
+            .byokProvider(null)
             .build();
 
         return ResponseEntity.ok(resp);

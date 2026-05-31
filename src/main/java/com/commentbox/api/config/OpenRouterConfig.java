@@ -11,15 +11,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class OpenRouterConfig {
 
     @Bean
-    public WebClient openRouterWebClient(
-            @Value("${openrouter.api.url}") String apiUrl,
-            @Value("${openrouter.api.key}") String apiKey) {
-        if (apiUrl == null) {
+    public WebClient openRouterWebClient(@Value("${openrouter.api.url}") String apiUrl) {
+        if (apiUrl == null || apiUrl.isBlank()) {
             throw new IllegalArgumentException("openrouter.api.url must be configured");
         }
         return WebClient.builder()
             .baseUrl(apiUrl)
-            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build();
     }

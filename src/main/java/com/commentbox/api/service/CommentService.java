@@ -27,7 +27,6 @@ public class CommentService {
 
     private final PromptBuilder promptBuilder;
     private final WebClient openRouterWebClient;
-    private final ApiKeyService apiKeyService;
     private final UsageLimitService usageLimitService;
     private final CommentHistoryRepository commentHistoryRepository;
     private final UserRepository userRepository;
@@ -51,10 +50,9 @@ public class CommentService {
             String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
             User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new ApiException("User not found", 401));
 
-            if (apiKeyService.hasActiveKey(userEmail, "openrouter")) {
-                // BYOK user — use their key and skip limits
+            if (request.getApiKey() != null && !request.getApiKey().trim().isEmpty()) {
                 byokActive = true;
-                apiKeyToUse = apiKeyService.resolveKey(userEmail, "openrouter");
+                apiKeyToUse = request.getApiKey().trim();
             } else {
                 // Free-tier user — enforce daily limit
                 usageLimitService.checkAndIncrement(user);
@@ -62,7 +60,7 @@ public class CommentService {
             }
 
             if (apiKeyToUse == null || apiKeyToUse.trim().isEmpty()) {
-                throw new ApiException("API key not configured. Please set OPENROUTER_API_KEY or provide your own key in settings.", 500);
+                throw new ApiException("API key not configured. Please set OPENROUTER_API_KEY or provide your own key in the browser.", 500);
             }
             Map<String, Object> payload = Map.of(
                     "model", model,

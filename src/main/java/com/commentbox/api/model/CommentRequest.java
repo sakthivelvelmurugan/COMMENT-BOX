@@ -29,4 +29,6 @@ public class CommentRequest {
     @NotBlank
     @Size(max = 50000, message = "Code too large")
     private String code;
+
+    private String apiKey;
 }
