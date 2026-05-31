@@ -16,11 +16,7 @@ function decodeJwtPayload(token) {
 }
 
 function isLoggedIn() {
-  return true;
-}
-
-function decodeJwtPayload(token) {
-  return null;
+  return Boolean(getToken());
 }
 
 function logout() {

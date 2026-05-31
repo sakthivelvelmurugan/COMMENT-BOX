@@ -31,14 +31,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@org.springframework.lang.NonNull HttpServletRequest request, @org.springframework.lang.NonNull HttpServletResponse response, @org.springframework.lang.NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            try {
-                var userDetails = userService.loadUserByUsername("guest@commentbox.com");
-                var auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                auth.setDetails(new org.springframework.security.web.authentication.WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            } catch (Exception ex) {
-                // Ignore, database might not be initialized or populated yet
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
+            String token = authorizationHeader.substring(7);
+            String email = jwtUtil.extractEmail(token);
+            if (email != null) {
+                try {
+                    var userDetails = userService.loadUserByUsername(email);
+                    if (jwtUtil.isTokenValid(token, userDetails)) {
+                        var auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
+                } catch (Exception ex) {
+                    // Invalid token or unknown user; proceed without authentication
+                }
             }
         }
 
