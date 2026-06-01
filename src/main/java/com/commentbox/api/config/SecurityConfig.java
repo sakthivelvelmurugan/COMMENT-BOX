@@ -29,8 +29,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
                         "/",
-                        "/auth/register",
-                        "/auth/login",
                         "/actuator/health",
                         "/login.html",
                         "/register.html",
@@ -48,7 +46,7 @@ public class SecurityConfig {
                         "/*.html",
                         "/favicon.ico"
                     ).permitAll()
-                    .anyRequest().authenticated()
+                    .anyRequest().permitAll()
                 );
 
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
