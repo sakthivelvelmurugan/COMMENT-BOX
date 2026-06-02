@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class CommentRequest {
 
     @NotBlank
-    @Pattern(regexp = "^(java|python|cpp)$", message = "Unsupported language")
+    @Pattern(regexp = "^(java|python|cpp|other)$", message = "Unsupported language")
     private String language;
 
     @NotBlank
