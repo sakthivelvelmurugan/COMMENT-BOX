@@ -7,8 +7,13 @@
 
 let currentLang = 'java';
 let toastTimer;
-let hasOwnApiKey = false;
-const generateLimit = 5;
+
+function authFetch(url, options = {}) {
+  if (typeof window.authFetch === 'function') {
+    return window.authFetch(url, options);
+  }
+  return fetch(url, options);
+}
 
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -102,33 +107,6 @@ function clearStoredApiKey() {
   localStorage.removeItem('cb-openrouter-key');
 }
 
-function getStoredUsageCount() {
-  return Number(localStorage.getItem('cb-usage-count') || 0);
-}
-
-function setStoredUsageCount(count) {
-  localStorage.setItem('cb-usage-count', String(count));
-}
-
-function updateUsageStatus(hasKey = false) {
-  const status = document.getElementById('usageStatus');
-  if (!status) return;
-  if (hasKey) {
-    status.hidden = true;
-    return;
-  }
-  const count = getStoredUsageCount();
-  status.textContent = `${count} / ${generateLimit} generates used today`;
-  status.hidden = false;
-}
-
-function incrementUsageCount() {
-  if (hasOwnApiKey) return;
-  const next = Math.min(generateLimit, getStoredUsageCount() + 1);
-  setStoredUsageCount(next);
-  updateUsageStatus(false);
-}
-
 function toggleSettingsPopover(open) {
   const popover = document.getElementById('settingsPopover');
   const toggle = document.getElementById('settingsToggle');
@@ -147,8 +125,6 @@ function renderKeyState(data, options = {}) {
   if (!wrap) return;
   const storedKey = getStoredApiKey();
   const hasKey = !!storedKey;
-  hasOwnApiKey = hasKey;
-  updateUsageStatus(hasKey);
   wrap.innerHTML = '';
 
   if (hasKey) {
@@ -344,7 +320,7 @@ async function generateComments(config) {
   const {
     codeInput, commentStyle, density, generateBtn, generateInner,
     generateSpinner, paneOutput, emptyState, outputPre,
-    outLineNumbers, outCharCount, copyBtn, downloadBtn, shareBtn
+    outLineNumbers, outCharCount, copyBtn, downloadBtn
   } = config;
 
   const code = codeInput.value.trim();
@@ -368,17 +344,18 @@ async function generateComments(config) {
   try {
     const res = await authFetch('/api/v1/comments/generate', {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(payload)
     });
 
     if (res.status === 429) {
-      setStoredUsageCount(generateLimit);
-      updateUsageStatus(false);
       showUpgradeModal();
       return;
     }
 
-    const data = await res.json();
+    const data = await parseJsonResponse(res);
     if (!res.ok) throw new Error(data.message || 'API error');
 
     const output = stripCodeFences(data.outputCode || '');
@@ -390,22 +367,7 @@ async function generateComments(config) {
     outCharCount.textContent = `${lines} line${lines !== 1 ? 's' : ''}`;
     if (copyBtn) copyBtn.disabled = false;
     if (downloadBtn) downloadBtn.disabled = false;
-    if (shareBtn) {
-      shareBtn.disabled = false;
-      shareBtn.hidden = false;
-    }
-    window.lastHistoryId = data.historyId;
-    incrementUsageCount();
     showToast('Comments generated ✓');
-
-    // Google Analytics: track successful generation event
-    if (typeof gtag === 'function') {
-      gtag('event', 'generate_comments', {
-        language: currentLang,
-        style: payload.style,
-        density: payload.density
-      });
-    }
   } catch (err) {
     showToast(err.message || 'Something went wrong', true);
     console.error('[CommentBox]', err);
@@ -414,23 +376,6 @@ async function generateComments(config) {
   }
 }
 
-async function shareLatest() {
-  try {
-    const id = window.lastHistoryId;
-    if (!id) { showToast('No history id available', true); return; }
-    const res = await authFetch(`/api/v1/history/${id}/share`, { method: 'POST' });
-    if (!res.ok) {
-      const d = await res.json();
-      throw new Error(d.message || 'Share failed');
-    }
-    const payload = await res.json();
-    await navigator.clipboard.writeText(payload.shareUrl);
-    showToast('Link copied!');
-  } catch (err) {
-    showToast(err.message || 'Share failed', true);
-    console.error(err);
-  }
-}
 
 function restoreFromHistory(config) {
   if (!config) return false;
@@ -477,63 +422,6 @@ function restoreFromHistory(config) {
   }
 }
 
-function setupAuth() {
-  Array.from(document.querySelectorAll('.password-toggle')).forEach(btn => {
-    btn.addEventListener('click', () => {
-      const group = btn.closest('.password-group');
-      if (!group) return;
-      const input = group.querySelector('input[type="password"], input[type="text"]');
-      if (!input) return;
-      input.type = input.type === 'password' ? 'text' : 'password';
-      btn.textContent = input.type === 'password' ? 'Show' : 'Hide';
-    });
-  });
-
-  const loginForm = document.getElementById('loginForm');
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail')?.value || '';
-      const password = document.getElementById('loginPassword')?.value || '';
-      const errPanel = document.getElementById('loginError');
-      try {
-        const res = await authFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-        const data = await parseJsonResponse(res);
-        if (!res.ok) throw new Error(data.message || `Login failed (${res.status})`);
-        localStorage.setItem('cb-token', data.token);
-        window.location.href = '/index.html';
-      } catch (err) {
-        if (errPanel) { errPanel.hidden = false; errPanel.textContent = err.message || 'Login failed'; }
-        showToast(err.message || 'Login failed', true);
-      }
-    });
-  }
-
-  const registerForm = document.getElementById('registerForm');
-  if (registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('registerEmail')?.value || '';
-      const password = document.getElementById('registerPassword')?.value || '';
-      const confirm = document.getElementById('confirmPassword')?.value || '';
-      const errPanel = document.getElementById('registerError');
-      if (password !== confirm) {
-        if (errPanel) { errPanel.hidden = false; errPanel.textContent = 'Passwords do not match'; }
-        return showToast('Passwords do not match', true);
-      }
-      try {
-        const res = await authFetch('/auth/register', { method: 'POST', body: JSON.stringify({ email, password }) });
-        const data = await parseJsonResponse(res);
-        if (!res.ok) throw new Error(data.message || `Register failed (${res.status})`);
-        localStorage.setItem('cb-token', data.token);
-        window.location.href = '/index.html';
-      } catch (err) {
-        if (errPanel) { errPanel.hidden = false; errPanel.textContent = err.message || 'Register failed'; }
-        showToast(err.message || 'Register failed', true);
-      }
-    });
-  }
-}
 
 async function setupEditor() {
   const codeInputEl = document.getElementById('codeInput');
@@ -553,7 +441,6 @@ async function setupEditor() {
   const pasteBtnEl = document.getElementById('pasteBtn');
   const clearBtnEl = document.getElementById('clearBtn');
   const languageSelectEl = document.getElementById('languageSelect');
-  const usageStatusEl = document.getElementById('usageStatus');
   const settingsToggleEl = document.getElementById('settingsToggle');
   const settingsPopoverEl = document.getElementById('settingsPopover');
   const settingsCloseBtnEl = document.getElementById('settingsCloseBtn');
@@ -670,7 +557,6 @@ async function setupEditor() {
   commentStyleEl.addEventListener('change', () => updateDropdownDescriptions(commentStyleEl.value, densityEl.value));
   densityEl.addEventListener('change', () => updateDropdownDescriptions(commentStyleEl.value, densityEl.value));
 
-  updateUsageStatus(hasOwnApiKey);
   settingsToggleEl?.addEventListener('click', () => toggleSettingsPopover());
   settingsCloseBtnEl?.addEventListener('click', () => closeSettingsPopover());
   document.addEventListener('click', (event) => {
@@ -695,8 +581,7 @@ async function setupEditor() {
     outLineNumbers: outLineNumbersEl,
     outCharCount: outCharCountEl,
     copyBtn: copyBtnEl,
-    downloadBtn: downloadBtnEl,
-    shareBtn: shareBtnEl
+    downloadBtn: downloadBtnEl
   }));
 
   copyBtnEl?.addEventListener('click', async () => {
@@ -725,7 +610,6 @@ async function setupEditor() {
     showToast(`Downloaded ${filename}`);
   });
 
-  shareBtnEl?.addEventListener('click', shareLatest);
 
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -747,7 +631,6 @@ async function setupEditor() {
     outLineCount: outCharCountEl,
     copyBtn: copyBtnEl,
     downloadBtn: downloadBtnEl,
-    shareBtn: shareBtnEl,
     emptyState: emptyStateEl
   });
 
@@ -779,6 +662,5 @@ function setupGlobal() {
 document.addEventListener('DOMContentLoaded', () => {
   setupGlobal();
   setupEditor();
-  setupAuth();
   fetchKeyInfo().then(info => { renderKeyState(info || { hasKey: false }); });
 });
