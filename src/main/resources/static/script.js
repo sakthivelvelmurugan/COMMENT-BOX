@@ -8,8 +8,8 @@
 let currentLang = 'java';
 let toastTimer;
 
-function authFetch(url, options = {}) {
-  if (typeof window.authFetch === 'function') {
+function authFetchLocal(url, options = {}) {
+  if (typeof window.authFetch === 'function' && window.authFetch !== authFetchLocal) {
     return window.authFetch(url, options);
   }
   return fetch(url, options);
@@ -342,7 +342,7 @@ async function generateComments(config) {
   };
 
   try {
-    const res = await authFetch('/api/v1/comments/generate', {
+    const res = await authFetchLocal('/api/v1/comments/generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
