@@ -55,10 +55,13 @@ public class CommentService {
                 .block();
         } catch (WebClientResponseException ex) {
             log.error("OpenRouter API error", ex);
-            throw new ApiException("OpenRouter API error: " + ex.getResponseBodyAsString(), ex);
+            int status = ex.getRawStatusCode();
+            String body = ex.getResponseBodyAsString();
+            String message = String.format("OpenRouter API error (%d): %s", status, body != null ? body : ex.getMessage());
+            throw new ApiException(message, status, ex);
         } catch (Exception ex) {
             log.error("Unexpected error calling OpenRouter", ex);
-            throw new ApiException("Failed to generate comments", ex);
+            throw new ApiException("Failed to generate comments", 500, ex);
         }
 
         if (response == null || response.getChoices() == null || response.getChoices().isEmpty() || response.getChoices().get(0).getMessage() == null) {
