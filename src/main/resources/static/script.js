@@ -187,9 +187,13 @@ async function generateComments() {
       body: JSON.stringify(payload)
     });
 
-    const data = await response.json().catch(() => ({}));
+    const data = await response.json().catch(async () => {
+      const text = await response.text().catch(() => '');
+      return { message: text || response.statusText || 'Server error' };
+    });
     if (!response.ok) {
-      throw new Error(data.message || 'Generation failed.');
+      const errorMessage = data.message || data.error || `Generation failed (${response.status})`;
+      throw new Error(errorMessage);
     }
 
     const output = (data.outputCode || data.output || '').replace(/^```[a-z]*\n?/i, '').replace(/```$/i, '').trim();

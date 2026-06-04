@@ -34,7 +34,7 @@ public class CommentService {
         String prompt = promptBuilder.buildPrompt(request.getLanguage(), request.getStyle(), request.getDensity(), code);
 
         boolean byokActive = request.getApiKey() != null && !request.getApiKey().trim().isEmpty();
-        String apiKeyToUse = byokActive ? request.getApiKey().trim() : platformApiKey;
+        String apiKeyToUse = byokActive ? request.getApiKey().trim() : normalizeApiKey(platformApiKey);
 
         if (apiKeyToUse == null || apiKeyToUse.isBlank()) {
             throw new ApiException("API key not configured. Provide your own key in the browser or set OPENROUTER_API_KEY on the backend.", 400);
@@ -77,6 +77,17 @@ public class CommentService {
             .provider("openrouter")
             .historyId(null)
             .build();
+    }
+
+    private String normalizeApiKey(String key) {
+        if (key == null) {
+            return null;
+        }
+        String trimmed = key.trim();
+        if (trimmed.isBlank() || trimmed.contains("${") || trimmed.contains("}") || trimmed.startsWith("env:")) {
+            return null;
+        }
+        return trimmed;
     }
 
     private String sanitizeCode(String code) {
