@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
@@ -8,14 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX');
-  </script>
   <script>
     (function() {
       const theme = localStorage.getItem('cb-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -23,209 +15,142 @@
     })();
   </script>
 </head>
-<body data-page="editor">
-
-  <header class="navbar">
-    <div class="nav-inner">
-      <a href="/index.html" class="logo-wrap">
-        <svg class="logo-svg" width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="38" height="38" rx="10" fill="var(--accent)"/>
-          <rect x="7" y="7" width="22" height="16" rx="4" fill="var(--logo-bubble)"/>
-          <path d="M12 23 L10 30 L18 25" fill="var(--logo-bubble)"/>
-          <rect x="11" y="11" width="6" height="2" rx="1" ry="1" fill="var(--logo-line1)"/>
-          <rect x="11" y="15" width="10" height="2" rx="1" ry="1" fill="var(--logo-line2)"/>
-          <text x="20" y="22" font-size="8" font-family="monospace" fill="var(--logo-bracket)" font-weight="700">{}</text>
-        </svg>
-        <span class="logo-text">comment<span class="logo-accent">box</span></span>
-      </a>
-
-      <button class="nav-toggle" id="navToggle" aria-label="Open navigation" type="button"><span></span><span></span><span></span></button>
-
-      <nav class="nav-links">
-        <a href="/index.html" class="nav-link active">Editor</a>
-        <a href="/docs.html" class="nav-link">Docs</a>
-      </nav>
-
-      <div class="nav-actions">
-        <button class="settings-toggle" id="settingsToggle" aria-label="Open settings" type="button" aria-expanded="false" data-tooltip="Settings">
-          <span aria-hidden="true">⚙</span>
-        </button>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" type="button">
-          <span class="theme-icon sun">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-            </svg>
-          </span>
-          <span class="theme-icon moon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-          </span>
-        </button>
-        <div class="settings-popover" id="settingsPopover" aria-hidden="true">
-          <div class="settings-popover-inner">
-            <div class="settings-popover-header">
-              <h4>OpenRouter API Key</h4>
-              <button class="popover-close" id="settingsCloseBtn" type="button" aria-label="Close settings">×</button>
-            </div>
-            <p class="settings-subtitle">Paste your OpenRouter key here. It is stored only in your browser.</p>
-            <div class="apikey-field-wrap"></div>
-          </div>
-        </div>
+<body>
+  <header class="topbar">
+    <div class="brand-group">
+      <div class="brand-mark" aria-hidden="true">{ }</div>
+      <div>
+        <div class="brand-title">CommentBox</div>
+        <div class="brand-subtitle">Stateless OpenRouter code commenter</div>
       </div>
+    </div>
+
+    <div class="toolbar-actions">
+      <div class="key-status-row">
+        <span class="key-status-label">API key</span>
+        <span class="key-status-pill" id="keyStatus">Not set</span>
+      </div>
+      <button class="icon-button" id="settingsToggle" type="button" aria-label="Open API key settings">Key</button>
+      <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle dark mode">Theme</button>
     </div>
   </header>
 
-  <section class="hero">
-    <div class="hero-badge"><span class="badge-dot"></span>AI-assisted code comments</div>
-    <h1 class="hero-title">Add comments to <span class="hero-highlight">any code, instantly.</span></h1>
-    <p class="hero-sub">Works with Java, Python, and C++.</p>
-  </section>
+  <main class="main-content">
+    <section class="hero">
+      <p class="hero-eyebrow">Fast, focused commenting for your code</p>
+      <h1>Paste code, choose options, generate commented output.</h1>
+      <p class="hero-text">A lightweight editor for Java, Python, C++, or any language. Your OpenRouter key stays in your browser.</p>
+    </section>
 
-  <main class="editor-shell">
-    <div class="controls-bar">
-      <div class="control-group">
-        <label class="ctrl-label" for="languageSelect">Language</label>
-        <select id="languageSelect" class="select-styled">
-          <option value="java">Java</option>
-          <option value="python">Python</option>
-          <option value="cpp">C++</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-      <div class="controls-right">
-        <div class="control-group">
-          <label class="ctrl-label" for="commentStyle">Comment style</label>
-          <select id="commentStyle" class="select-styled">
+    <section class="app-shell">
+      <div class="controls-panel" aria-label="Generation controls">
+        <div class="selectors-grid">
+          <label class="field-label" for="languageSelect">Language</label>
+          <select id="languageSelect">
+            <option value="java">Java</option>
+            <option value="python">Python</option>
+            <option value="cpp">C++</option>
+            <option value="other">Other</option>
+          </select>
+
+          <label class="field-label" for="commentStyle">Comment style</label>
+          <select id="commentStyle">
             <option value="inline">Inline</option>
             <option value="block">Block</option>
             <option value="jsdoc">Javadoc</option>
           </select>
-          <p class="select-description" id="styleDescription">Short comments on the same line as code.</p>
-        </div>
-        <div class="control-group">
-          <label class="ctrl-label" for="density">Density</label>
-          <select id="density" class="select-styled">
+
+          <label class="field-label" for="density">Density</label>
+          <select id="density">
             <option value="normal">Normal</option>
             <option value="verbose">Verbose</option>
             <option value="minimal">Minimal</option>
           </select>
-          <p class="select-description" id="densityDescription">Balanced coverage of key logic.</p>
         </div>
-        <div class="toolbar-status" id="usageStatus" hidden>0 / 10 generates used today</div>
-        <button class="toolbar-generate-btn" id="generateBtn" type="button" aria-label="Generate comments (Ctrl+Enter)">
-          <span class="generate-btn-inner">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5,3 19,12 5,21"/></svg>
-            <span>Generate</span>
-          </span>
-          <span class="generate-spinner" id="generateSpinner" aria-hidden="true"></span>
-        </button>
-      </div>
-    </div>
 
-    <!-- Processing progress bar: only visible during active generation -->
-    <div class="gen-progress" id="genProgress" hidden aria-label="Generating comments">
-      <div class="gen-progress-bar-wrap"><div class="gen-progress-bar" id="genProgressBar"></div></div>
-    </div>
-
-    <section class="editor-grid" id="editorGrid">
-      <div class="pane pane-input">
-        <div class="pane-header">
-          <span class="pane-label">Input</span>
-          <div class="pane-actions">
-            <button class="icon-btn" type="button" id="pasteBtn" aria-label="Paste" data-tooltip="Paste">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-            </button>
-            <span class="pane-action-divider" aria-hidden="true"></span>
-            <button class="icon-btn" type="button" id="clearBtn" aria-label="Clear" data-tooltip="Clear">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-            </button>
+        <div class="action-row">
+          <button id="generateBtn" class="primary-button" type="button">Generate comments</button>
+          <div class="progress-row" id="progressRow" hidden>
+            <span class="progress-text">Generating…</span>
+            <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
           </div>
         </div>
-        <div class="code-area-wrap">
-          <div class="line-numbers" id="lineNumbers" aria-hidden="true"></div>
-          <textarea id="codeInput" class="code-textarea" placeholder="// Paste your code here…" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
-        </div>
-        <div class="pane-footer"><span class="line-count" id="charCount" hidden></span></div>
       </div>
 
-      <div class="editor-divider" id="editorDivider">
-        <div class="resizer-track" aria-label="Drag to resize panels" title="Drag to resize">
-          <div class="resizer-handle"></div>
-        </div>
-      </div>
-
-      <div class="pane pane-output">
-        <div class="pane-header">
-          <span class="pane-label">Output</span>
-          <div class="pane-actions">
-            <button class="icon-btn" type="button" id="copyBtn" disabled aria-label="Copy" data-tooltip="Copy">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            </button>
-            <span class="pane-action-divider" aria-hidden="true"></span>
-            <button class="icon-btn" type="button" id="downloadBtn" disabled aria-label="Download" data-tooltip="Download">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </button>
-            <button class="icon-btn" type="button" id="shareBtn" disabled hidden>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-              Share
-            </button>
-          </div>
-        </div>
-        <div class="code-area-wrap output-wrap">
-          <div class="line-numbers" id="outLineNumbers" aria-hidden="true"></div>
-          <div class="output-display" id="outputDisplay" aria-live="polite">
-            <div class="empty-state" id="emptyState">
-              <div class="empty-icon" aria-hidden="true">{ }</div>
-              <p class="empty-line">Paste your code in the left panel</p>
-              <p class="empty-line">then hit Generate</p>
-              <button class="empty-action" type="button" id="tryExampleBtn">Try an example →</button>
+      <div class="editor-grid">
+        <section class="pane pane-left">
+          <div class="pane-header">
+            <div>
+              <div class="pane-title">Code input</div>
+              <div class="pane-subtitle">Paste source code here.</div>
             </div>
-            <pre id="outputPre" class="output-pre" hidden></pre>
+            <div class="pane-actions">
+              <button class="ghost-button" id="pasteBtn" type="button">Paste</button>
+              <button class="ghost-button" id="clearBtn" type="button">Clear</button>
+            </div>
           </div>
-        </div>
-        <div class="pane-footer pane-footer--split">
-          <span class="line-count" id="outCharCount"></span>
-          <span class="model-pill">
-            <span class="model-pill-label">Model</span>
-            <span class="model-pill-value">gpt-4o-mini via OpenRouter</span>
-          </span>
-        </div>
+          <textarea id="codeInput" class="code-input" placeholder="Paste your code here…" spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+          <div class="pane-footer"><span id="inputLines" class="meta-text">0 lines</span></div>
+        </section>
+
+        <section class="pane pane-right">
+          <div class="pane-header">
+            <div>
+              <div class="pane-title">Commented output</div>
+              <div class="pane-subtitle">Generated code appears here.</div>
+            </div>
+            <div class="pane-actions">
+              <button class="ghost-button" id="copyBtn" type="button" disabled>Copy</button>
+              <button class="ghost-button" id="downloadBtn" type="button" disabled>Download</button>
+            </div>
+          </div>
+          <div class="output-area">
+            <div id="emptyState" class="empty-state">
+              <div class="empty-icon" aria-hidden="true">{ }</div>
+              <p>Paste code on the left, choose options, then hit Generate.</p>
+            </div>
+            <pre id="outputPre" class="output-pre" hidden aria-live="polite"></pre>
+          </div>
+          <div class="pane-footer"><span id="outputLines" class="meta-text">Ready</span></div>
+        </section>
       </div>
     </section>
-
   </main>
 
-  <!-- TOAST -->
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-  <!-- UPGRADE MODAL -->
-  <div class="modal-overlay" id="upgradeModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="upgradeModalTitle">
-    <div class="modal-card">
-      <button class="modal-close" id="closeUpgradeBtn" type="button" aria-label="Close">×</button>
-      <h3 id="upgradeModalTitle">Daily limit reached</h3>
-      <p class="modal-copy">You've used all 5 free generates for today. Add your own OpenRouter API key in the settings panel to continue with your own key.</p>
-      <div class="modal-actions">
-        <button class="btn-primary" id="focusApiKeyBtn">Add my API key</button>
-        <button class="text-link" id="closeUpgradeBtnFallback" type="button">Maybe later</button>
+  <aside class="settings-panel" id="settingsPanel" aria-hidden="true">
+    <div class="settings-header">
+      <div>
+        <h2>OpenRouter API key</h2>
+        <p>Stored only in this browser. Leave empty to use the server fallback if available.</p>
       </div>
+      <button class="close-button" id="settingsClose" type="button" aria-label="Close settings">×</button>
     </div>
-  </div>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <span>© 2025 CommentBox</span>
-    <span class="footer-sep">·</span>
-    <a href="#">Privacy</a>
-    <span class="footer-sep">·</span>
-    <a href="#">GitHub</a>
-  </footer>
+    <div class="settings-body">
+      <div class="apikey-status-row">
+        <span class="status-label">Current key</span>
+        <span id="statusBadge" class="status-badge">Not set</span>
+      </div>
 
-  <script src="config.js"></script>
-  <script src="auth.js"></script>
+      <div class="field-group">
+        <label class="field-label" for="apiKeyInput">OpenRouter key</label>
+        <div class="apikey-input-wrap">
+          <input id="apiKeyInput" class="text-input" type="password" placeholder="sk-or-v1-••••••••" autocomplete="off" spellcheck="false" />
+          <button class="toggle-button" id="toggleKeyBtn" type="button">Show</button>
+        </div>
+      </div>
+
+      <div class="settings-actions">
+        <button class="primary-button" id="saveKeyBtn" type="button">Save key</button>
+        <button class="ghost-button" id="removeKeyBtn" type="button">Remove key</button>
+      </div>
+
+      <div id="keyFeedback" class="feedback-text" aria-live="polite"></div>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <footer class="page-footer">© 2026 CommentBox — Stateless OpenRouter proxy</footer>
   <script src="script.js"></script>
 </body>
 </html>
