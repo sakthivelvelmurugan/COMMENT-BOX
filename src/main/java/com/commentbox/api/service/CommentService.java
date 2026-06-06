@@ -35,6 +35,7 @@ public class CommentService {
 
         boolean byokActive = request.getApiKey() != null && !request.getApiKey().trim().isEmpty();
         String apiKeyToUse = byokActive ? request.getApiKey().trim() : normalizeApiKey(platformApiKey);
+        log.info("API key mode: byokActive={}, platformApiKeyPresent={}, apiKeyToUseMasked={}", byokActive, platformApiKey != null && !platformApiKey.isBlank(), apiKeyToUse == null ? "null" : (apiKeyToUse.length() > 5 ? apiKeyToUse.substring(0, 5) + "***" : "***"));
 
         if (apiKeyToUse == null || apiKeyToUse.isBlank()) {
             throw new ApiException("API key not configured. Provide your own key in the browser or set OPENROUTER_API_KEY on the backend.", 400);
