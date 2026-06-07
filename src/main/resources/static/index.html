@@ -24,13 +24,13 @@
         <div class="brand-subtitle">Stateless OpenRouter code commenter</div>
       </div>
     </div>
-
     <div class="toolbar-actions">
       <div class="key-status-row">
         <span class="key-status-label">API key</span>
         <span class="key-status-pill" id="keyStatus">Not set</span>
       </div>
       <button class="icon-button" id="settingsToggle" type="button" aria-label="Open API key settings">Key</button>
+      <a href="docs.html" class="icon-button" aria-label="Help / Documentation">Help</a>
       <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle dark mode">Theme</button>
     </div>
   </header>
@@ -45,32 +45,35 @@
     <section class="app-shell">
       <div class="controls-panel" aria-label="Generation controls">
         <div class="selectors-grid">
-          <label class="field-label" for="languageSelect">Language</label>
-          <select id="languageSelect">
-            <option value="java">Java</option>
-            <option value="python">Python</option>
-            <option value="cpp">C++</option>
-            <option value="other">Other</option>
-          </select>
-
-          <label class="field-label" for="commentStyle">Comment style</label>
-          <select id="commentStyle">
-            <option value="inline">Inline</option>
-            <option value="block">Block</option>
-            <option value="jsdoc">Javadoc</option>
-          </select>
-
-          <label class="field-label" for="density">Density</label>
-          <select id="density">
-            <option value="normal">Normal</option>
-            <option value="verbose">Verbose</option>
-            <option value="minimal">Minimal</option>
-          </select>
+          <div>
+            <label class="field-label" for="languageSelect">Language</label>
+            <select id="languageSelect">
+              <option value="java">Java</option>
+              <option value="python">Python</option>
+              <option value="cpp">C++</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="commentStyle">Comment style</label>
+            <select id="commentStyle">
+              <option value="inline">Inline</option>
+              <option value="block">Block</option>
+              <option value="jsdoc">Javadoc</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="density">Density</label>
+            <select id="density">
+              <option value="normal">Normal</option>
+              <option value="verbose">Verbose</option>
+              <option value="minimal">Minimal</option>
+            </select>
+          </div>
         </div>
-
         <div class="action-row">
           <button id="generateBtn" class="primary-button" type="button">Generate comments</button>
-          <div class="progress-row" id="progressRow" hidden>
+          <div class="progress-row" id="progressRow" style="display:none;">
             <span class="progress-text">Generating…</span>
             <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
           </div>
@@ -125,13 +128,11 @@
       </div>
       <button class="close-button" id="settingsClose" type="button" aria-label="Close settings">×</button>
     </div>
-
     <div class="settings-body">
       <div class="apikey-status-row">
         <span class="status-label">Current key</span>
         <span id="statusBadge" class="status-badge">Not set</span>
       </div>
-
       <div class="field-group">
         <label class="field-label" for="apiKeyInput">OpenRouter key</label>
         <div class="apikey-input-wrap">
@@ -139,12 +140,10 @@
           <button class="toggle-button" id="toggleKeyBtn" type="button">Show</button>
         </div>
       </div>
-
       <div class="settings-actions">
         <button class="primary-button" id="saveKeyBtn" type="button">Save key</button>
         <button class="ghost-button" id="removeKeyBtn" type="button">Remove key</button>
       </div>
-
       <div id="keyFeedback" class="feedback-text" aria-live="polite"></div>
     </div>
   </aside>

@@ -3,142 +3,138 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CommentBox — Documentation</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>CommentBox — Help & Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX');
-  </script>
+  <link rel="stylesheet" href="style.css" />
   <script>
     (function() {
       const theme = localStorage.getItem('cb-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
-  <style>
-    .docs-shell {
-      max-width: 840px;
-      margin: 0 auto;
-      padding: 40px 24px 80px;
-      flex: 1;
-    }
-    .docs-title {
-      font-size: clamp(24px, 5vw, 36px);
-      font-weight: 600;
-      letter-spacing: -1px;
-      margin-bottom: 24px;
-    }
-    .docs-section {
-      margin-bottom: 40px;
-    }
-    .docs-section h2 {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
-    }
-    .docs-section p {
-      color: var(--text-sec);
-      margin-bottom: 16px;
-      line-height: 1.7;
-    }
-    .docs-code {
-      font-family: var(--font-code);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      padding: 12px 16px;
-      border-radius: var(--radius-sm);
-      overflow-x: auto;
-      margin-bottom: 16px;
-      font-size: 13px;
-    }
-    .docs-list {
-      margin-left: 20px;
-      margin-bottom: 16px;
-      color: var(--text-sec);
-    }
-    .docs-list li {
-      margin-bottom: 8px;
-      line-height: 1.6;
-    }
-  </style>
 </head>
-<body data-page="docs">
-  <header class="navbar">
-    <div class="nav-inner">
-      <a href="/index.html" class="logo-wrap">
-        <svg class="logo-svg" width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="38" height="38" rx="10" fill="var(--accent)"/>
-          <rect x="7" y="7" width="22" height="16" rx="4" fill="var(--logo-bubble)"/>
-          <path d="M12 23 L10 30 L18 25" fill="var(--logo-bubble)"/>
-          <rect x="11" y="11" width="6" height="2" rx="1" ry="1" fill="var(--logo-line1)"/>
-          <rect x="11" y="15" width="10" height="2" rx="1" ry="1" fill="var(--logo-line2)"/>
-          <text x="20" y="22" font-size="8" font-family="monospace" fill="var(--logo-bracket)" font-weight="700">{}</text>
-        </svg>
-        <span class="logo-text">comment<span class="logo-accent">box</span></span>
-      </a>
-      <nav class="nav-links">
-        <a href="/index.html" class="nav-link">Editor</a>
-        <a href="/docs.html" class="nav-link active">Docs</a>
-      </nav>
-      <div class="nav-actions">
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
-          <span class="theme-icon sun"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></span>
-          <span class="theme-icon moon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
-        </button>
+<body>
+  <header class="topbar">
+    <div class="brand-group">
+      <div class="brand-mark" aria-hidden="true">{ }</div>
+      <div>
+        <div class="brand-title">CommentBox</div>
+        <div class="brand-subtitle">Stateless OpenRouter code commenter</div>
       </div>
+    </div>
+    <div class="toolbar-actions">
+      <a href="index.html" class="icon-button" aria-label="Back to editor">← Editor</a>
+      <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle dark mode">Theme</button>
     </div>
   </header>
 
-  <main class="docs-shell">
-    <h1 class="docs-title">Documentation</h1>
-    
-    <section class="docs-section">
-      <h2>Introduction</h2>
-      <p>CommentBox is an AI-powered code annotation tool designed to enrich your source files with developer-friendly explanations. Paste raw logic from Java, Python, or C++, choose your style and density, and let AI generate accurate annotations instantly.</p>
+  <main class="main-content">
+    <section class="hero">
+      <p class="hero-eyebrow">Help & Documentation</p>
+      <h1>How to use CommentBox</h1>
+      <p class="hero-text">Everything you need to get your code commented in seconds.</p>
     </section>
 
-    <section class="docs-section">
-      <h2>Comment Styles</h2>
-      <p>You can customize how comments are written using the following formatting modes:</p>
-      <ul class="docs-list">
-        <li><strong>Inline:</strong> Generates concise comments (such as <code>//</code> in Java/C++ or <code>#</code> in Python) positioned directly above or next to key statements.</li>
-        <li><strong>Block:</strong> Creates structured paragraph summaries positioned above logical code segments, function definitions, or complex statements.</li>
-        <li><strong>Javadoc / JSDoc:</strong> Generates documentation headers (such as <code>/** ... */</code>) for classes and function definitions, combined with concise inline comments inside method bodies.</li>
-      </ul>
-    </section>
+    <div class="doc-shell">
 
-    <section class="docs-section">
-      <h2>Density Controls</h2>
-      <p>Configure the verbosity of generated comments based on your target audience:</p>
-      <ul class="docs-list">
-        <li><strong>Normal:</strong> Annotates meaningful logical blocks and complex operations.</li>
-        <li><strong>Verbose:</strong> Explains almost every statement, making it perfect for educational material or onboarding guides.</li>
-        <li><strong>Minimal:</strong> Annotates only complex mathematical/logical expressions or non-obvious workarounds.</li>
-      </ul>
-    </section>
+      <div class="doc-card">
+        <div class="doc-card-head">
+          <span class="doc-card-title">Quick start — 3 steps</span>
+          <span class="doc-card-sub">Under a minute</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="doc-step">
+            <div class="doc-step-num">1</div>
+            <div><strong>Paste your code</strong> into the left panel. Supports Java, Python, C++, or any language via the <em>Other</em> option. Click <strong>Paste</strong> to paste from clipboard directly.</div>
+          </div>
+          <div class="doc-step">
+            <div class="doc-step-num">2</div>
+            <div><strong>Choose your options</strong> — Language, Comment Style, and Density.</div>
+          </div>
+          <div class="doc-step">
+            <div class="doc-step-num">3</div>
+            <div><strong>Click Generate comments.</strong> Use <strong>Copy</strong> or <strong>Download</strong> to save the output.</div>
+          </div>
+        </div>
+      </div>
 
-    <section class="docs-section">
-      <h2>Usage Limits & BYOK</h2>
-      <p>By default, CommentBox offers 5 free generates per day. If you reach this limit, paste your own <strong>OpenRouter API Key</strong> into the settings panel at the top of the editor. Your key stays only in your browser, and generation requests will use your key directly.</p>
-    </section>
+      <div class="doc-card">
+        <div class="doc-card-head">
+          <span class="doc-card-title">Language</span>
+          <span class="doc-card-sub">Controls comment syntax</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="doc-opt"><span class="doc-opt-pill">Java</span><span>Uses <code>//</code> inline and <code>/** */</code> Javadoc blocks.</span></div>
+          <div class="doc-opt"><span class="doc-opt-pill">Python</span><span>Uses <code>#</code> inline and <code>"""docstrings"""</code>.</span></div>
+          <div class="doc-opt"><span class="doc-opt-pill">C++</span><span>Uses <code>//</code> inline and <code>/* */</code> block comments.</span></div>
+          <div class="doc-opt"><span class="doc-opt-pill">Other</span><span>AI picks the best style for the detected language.</span></div>
+        </div>
+      </div>
+
+      <div class="doc-card">
+        <div class="doc-card-head">
+          <span class="doc-card-title">Comment style</span>
+          <span class="doc-card-sub">Controls structure</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="doc-opt"><span class="doc-opt-pill">Inline</span><span>Short comments above or beside key lines. Best for quick annotation.</span></div>
+          <div class="doc-opt"><span class="doc-opt-pill">Block</span><span>Paragraph summaries above logical sections. Best for readability.</span></div>
+          <div class="doc-opt"><span class="doc-opt-pill">Javadoc</span><span>Full <code>/** @param @return */</code> headers on classes and methods. Best for API docs.</span></div>
+        </div>
+      </div>
+
+      <div class="doc-card">
+        <div class="doc-card-head">
+          <span class="doc-card-title">Density</span>
+          <span class="doc-card-sub">Controls how much gets commented</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="doc-opt"><span class="doc-opt-pill">Normal</span><span>Annotates logical blocks and complex operations. Good default.</span></div>
+          <div class="doc-opt"><span class="doc-opt-pill">Verbose</span><span>Explains nearly every statement. Ideal for teaching or onboarding.</span></div>
+          <div class="doc-opt"><span class="doc-opt-pill">Minimal</span><span>Only flags non-obvious logic. Best for experienced teams.</span></div>
+        </div>
+      </div>
+
+      <div class="doc-card">
+        <div class="doc-card-head">
+          <span class="doc-card-title">API key (BYOK)</span>
+          <span class="doc-card-sub">For unlimited generations</span>
+        </div>
+        <div class="doc-card-body">
+          <p class="doc-note">A limited number of free generations are available daily via a shared key. Once the limit is reached, add your own <strong>OpenRouter API key</strong>.</p>
+          <div class="doc-step">
+            <div class="doc-step-num">1</div>
+            <div>Click the <strong>Key</strong> button in the top-right toolbar.</div>
+          </div>
+          <div class="doc-step">
+            <div class="doc-step-num">2</div>
+            <div>Paste your key (starts with <code>sk-or-v1-</code>) and click <strong>Save key</strong>.</div>
+          </div>
+          <div class="doc-step">
+            <div class="doc-step-num">3</div>
+            <div>Your key is stored only in your browser — never sent to our servers.</div>
+          </div>
+          <p class="doc-note">No key yet? Get one free at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a>.</p>
+        </div>
+      </div>
+
+    </div>
   </main>
 
-  <footer class="footer">
-    <span>© 2026 CommentBox</span>
-    <span class="footer-sep">·</span>
-    <a href="#">Privacy</a>
-    <span class="footer-sep">·</span>
-    <a href="#">GitHub</a>
-  </footer>
+  <footer class="page-footer">© 2026 CommentBox — Stateless OpenRouter proxy</footer>
 
-  <script src="config.js"></script>
-  <script src="script.js"></script>
+  <script>
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        const html = document.documentElement;
+        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('cb-theme', next);
+      });
+    }
+  </script>
 </body>
 </html>
