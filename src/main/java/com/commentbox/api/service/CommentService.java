@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Service
 @RequiredArgsConstructor
@@ -118,6 +119,9 @@ public class CommentService {
         public List<Choice> getChoices() {
             return choices;
         }
+        public void setChoices(List<Choice> choices) {
+            this.choices = choices;
+        }
     }
 
     private static class Choice {
@@ -126,6 +130,9 @@ public class CommentService {
         public Message getMessage() {
             return message;
         }
+        public void setMessage(Message message) {
+            this.message = message;
+        }
     }
 
     private static class Message {
@@ -133,6 +140,9 @@ public class CommentService {
 
         public String getContent() {
             return content;
+        }
+        public void setContent(String content) {
+            this.content = content;
         }
     }
 }

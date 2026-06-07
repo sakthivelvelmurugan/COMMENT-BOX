@@ -1,10 +1,4 @@
-﻿(function () {
-  try {
-    window.API_BASE_URL = (typeof API_BASE_URL !== 'undefined' && API_BASE_URL) ? API_BASE_URL : '';
-  } catch (e) {
-    window.API_BASE_URL = '';
-  }
-})();
+﻿const API_BASE_URL = 'https://comment-box-production.up.railway.app';
 
 const themeToggle     = document.getElementById('themeToggle');
 const settingsToggle  = document.getElementById('settingsToggle');
@@ -44,9 +38,9 @@ function applyTheme(theme) {
 }
 
 // ── API key storage ───────────────────────────────────────────────────────────
-function getStoredApiKey()      { return localStorage.getItem('cb-openrouter-key') || ''; }
-function setStoredApiKey(v)     { localStorage.setItem('cb-openrouter-key', v); }
-function removeStoredApiKey()   { localStorage.removeItem('cb-openrouter-key'); }
+function getStoredApiKey()    { return localStorage.getItem('cb-openrouter-key') || ''; }
+function setStoredApiKey(v)   { localStorage.setItem('cb-openrouter-key', v); }
+function removeStoredApiKey() { localStorage.removeItem('cb-openrouter-key'); }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function showToast(message, isError = false) {
@@ -61,8 +55,8 @@ function showToast(message, isError = false) {
 // ── Key status UI ─────────────────────────────────────────────────────────────
 function updateKeyStatus() {
   const active = Boolean(getStoredApiKey());
-  if (keyStatus)    keyStatus.textContent = active ? 'Saved' : 'Not set';
-  if (statusBadge)  {
+  if (keyStatus)   keyStatus.textContent = active ? 'Saved' : 'Not set';
+  if (statusBadge) {
     statusBadge.textContent = active ? 'Saved locally' : 'No key';
     statusBadge.style.backgroundColor = active ? 'rgba(34,197,94,0.12)' : 'rgba(222,126,94,0.12)';
     statusBadge.style.color = active ? '#166534' : '#b91c1c';
@@ -187,20 +181,45 @@ async function generateComments() {
   };
 
   try {
-    const response = await fetch(`${window.API_BASE_URL}/api/v1/comments/generate`, {
+    // First do a health check to give a clearer error if the backend is down
+    let healthOk = false;
+    try {
+      const health = await fetch(`${API_BASE_URL}/actuator/health`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(5000)
+      });
+      healthOk = health.ok;
+    } catch (_) {
+      // health check failed — backend is unreachable
+      throw new Error('Backend is unreachable. Your Railway deployment may be sleeping or crashed. Check your Railway dashboard.');
+    }
+
+    if (!healthOk) {
+      throw new Error('Backend returned unhealthy status. Check your Railway logs.');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/comments/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(60000)   // 60s — LLM calls can be slow
     });
 
-    const data = await response.json().catch(async () => {
-      const text = await response.text().catch(() => '');
-      return { message: text || response.statusText || 'Server error' };
-    });
+    let data;
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      data = { message: text || response.statusText || 'Server error' };
+    }
 
-    if (!response.ok) throw new Error(data.message || data.error || `Generation failed (${response.status})`);
+    if (!response.ok) {
+      const msg = data.message || data.error || `Request failed (${response.status})`;
+      throw new Error(msg);
+    }
 
-    const output = (data.outputCode || data.output || '')
+    const output = (data.outputCode || data.output || data.commentedCode || '')
       .replace(/^```[a-z]*\n?/i, '')
       .replace(/```$/i, '')
       .trim();
@@ -212,8 +231,12 @@ async function generateComments() {
     updateOutputLines();
     updateControlsAfterOutput();
     showToast('Comments generated successfully.');
+
   } catch (error) {
-    showToast(error.message || 'Unable to generate comments.', true);
+    const msg = error.name === 'TimeoutError'
+      ? 'Request timed out (60 s). The LLM may be overloaded — try again.'
+      : (error.message || 'Unable to generate comments.');
+    showToast(msg, true);
     outputPre.hidden = true;
     emptyState.hidden = false;
   } finally {
