@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = 'https://comment-box-production.up.railway.app';
+﻿const API_BASE_URL = 'http://localhost:8080';  // Change this if your backend is hosted elsewhere
 
 const themeToggle     = document.getElementById('themeToggle');
 const settingsToggle  = document.getElementById('settingsToggle');
