@@ -181,28 +181,11 @@ async function generateComments() {
   };
 
   try {
-    // First do a health check to give a clearer error if the backend is down
-    let healthOk = false;
-    try {
-      const health = await fetch(`${API_BASE_URL}/actuator/health`, {
-        method: 'GET',
-        signal: AbortSignal.timeout(5000)
-      });
-      healthOk = health.ok;
-    } catch (_) {
-      // health check failed — backend is unreachable
-      throw new Error('Backend is unreachable. Your Railway deployment may be sleeping or crashed. Check your Railway dashboard.');
-    }
-
-    if (!healthOk) {
-      throw new Error('Backend returned unhealthy status. Check your Railway logs.');
-    }
-
     const response = await fetch(`${API_BASE_URL}/api/v1/comments/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(60000)   // 60s — LLM calls can be slow
+      signal: AbortSignal.timeout(60000)
     });
 
     let data;
@@ -234,8 +217,10 @@ async function generateComments() {
 
   } catch (error) {
     const msg = error.name === 'TimeoutError'
-      ? 'Request timed out (60 s). The LLM may be overloaded — try again.'
-      : (error.message || 'Unable to generate comments.');
+      ? 'Request timed out (60s). The LLM may be overloaded — try again.'
+      : error instanceof TypeError
+        ? 'Could not reach the server — check your network or CORS settings.'
+        : (error.message || 'Unable to generate comments.');
     showToast(msg, true);
     outputPre.hidden = true;
     emptyState.hidden = false;
