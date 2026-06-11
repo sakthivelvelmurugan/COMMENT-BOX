@@ -1,15 +1,14 @@
 # CommentBox API
 
-CommentBox is a Spring Boot backend API for generating and tracking comment history entries. It is built with Java 17, Spring Boot 3.2.7, H2 for local development, and PostgreSQL for production.
+CommentBox is a Spring Boot backend API for generating and tracking comment history entries. It is built with Java 17 and Spring Boot 3.2.7.
 
 ## Project structure
 
 - `src/main/java/com/commentbox/api` — application source code
 - `src/main/resources/application.properties` — local default configuration
-- `application-prod.properties` — production configuration for PostgreSQL
+- `application-prod.properties` — production configuration
 - `Dockerfile` — multi-stage Maven build to JRE Alpine container
 - `.dockerignore` — Docker build exclusions
-- `schema.sql` — PostgreSQL production schema DDL
 - `railway.toml` — Railway deployment configuration
 - `vercel.json` — Vercel Docker deployment configuration
 - `SMOKE_TEST.md` — QA checklist for validation
@@ -19,7 +18,6 @@ CommentBox is a Spring Boot backend API for generating and tracking comment hist
 - Java 17 JDK
 - Maven or the included Maven wrapper (`./mvnw` / `mvnw.cmd`)
 - Docker for container builds
-- PostgreSQL 14+ for production
 - Railway CLI or Vercel CLI for platform-specific deployment
 
 ## Local development
@@ -32,7 +30,7 @@ The application listens on port `8085` by default.
    ./mvnw clean package
    ```
 
-2. Run locally with the default H2 database:
+2. Run locally:
 
    ```bash
    ./mvnw spring-boot:run
@@ -44,17 +42,12 @@ The application listens on port `8085` by default.
    http://localhost:8085
    ```
 
-By default, local execution uses an in-memory H2 database. You can optionally configure environment variables to point to a PostgreSQL instance in development.
-
 ## Production configuration
 
-The production profile is defined in `application-prod.properties` and requires PostgreSQL environment variables.
+The production profile is defined in `application-prod.properties` and requires the application secrets for secure operation.
 
 Required environment variables:
 
-- `SPRING_DATASOURCE_URL` — PostgreSQL JDBC URL, for example `jdbc:postgresql://db:5432/commentbox`
-- `SPRING_DATASOURCE_USERNAME`
-- `SPRING_DATASOURCE_PASSWORD`
 - `JWT_SECRET`
 - `OPENROUTER_API_KEY`
 - `CORS_ALLOWED_ORIGINS` (recommended default: `http://localhost:5500`)
@@ -62,8 +55,6 @@ Required environment variables:
 
 Production settings:
 
-- `spring.jpa.hibernate.ddl-auto=validate`
-- PostgreSQL dialect
 - logging level set to `WARN`
 - actuator health exposed for readiness checks
 
@@ -79,28 +70,20 @@ Run the container:
 
 ```bash
 docker run --rm -p 8085:8085 \
-  -e SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/commentbox" \
-  -e SPRING_DATASOURCE_USERNAME="postgres" \
-  -e SPRING_DATASOURCE_PASSWORD="password" \
   -e JWT_SECRET="${JWT_SECRET}" \
   -e OPENROUTER_API_KEY="${OPENROUTER_API_KEY}" \
   -e SPRING_PROFILES_ACTIVE=prod \
   commentbox-api
 ```
 
-## Database schema
+## Deployment
 
-The production schema is managed through `schema.sql`.
+The repository includes `railway.toml` for Railway deployments.
 
-Tables:
+1. Set the required Railway environment variables.
+2. Deploy using Railway CLI or Railway dashboard.
 
-- `users`
-- `user_api_keys`
-- `comment_history`
-
-The schema contains referential integrity constraints, default timestamp fields, auto-incrementing primary keys, and an index for history queries.
-
-## Railway deployment
+## Vercel deployment
 
 The repository includes `railway.toml` for Railway deployments.
 
