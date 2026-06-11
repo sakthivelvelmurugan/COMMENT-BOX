@@ -119,10 +119,20 @@ function updateOutputLines() {
 }
 
 // ── Output helpers ────────────────────────────────────────────────────────────
+function showEmptyState() {
+  emptyState.hidden = false;
+  emptyState.style.display = '';
+}
+
+function hideEmptyState() {
+  emptyState.hidden = true;
+  emptyState.style.display = 'none';
+}
+
 function clearOutput() {
   outputPre.textContent = '';
   outputPre.hidden = true;
-  emptyState.hidden = false;
+  showEmptyState();
   outputLines.textContent = 'Ready';
   copyBtn.disabled = true;
   downloadBtn.disabled = true;
@@ -167,7 +177,7 @@ async function generateComments() {
   if (!code) { showToast('Paste some code first.', true); return; }
 
   setLoading(true);
-  emptyState.hidden = true;
+  hideEmptyState();
   outputPre.hidden = true;
   outputPre.textContent = '';
   updateOutputLines();
@@ -211,6 +221,7 @@ async function generateComments() {
 
     outputPre.textContent = output;
     outputPre.hidden = false;
+    hideEmptyState();
     updateOutputLines();
     updateControlsAfterOutput();
     showToast('Comments generated successfully.');
@@ -223,7 +234,8 @@ async function generateComments() {
         : (error.message || 'Unable to generate comments.');
     showToast(msg, true);
     outputPre.hidden = true;
-    emptyState.hidden = false;
+    outputPre.textContent = '';
+    showEmptyState();
   } finally {
     setLoading(false);
   }
