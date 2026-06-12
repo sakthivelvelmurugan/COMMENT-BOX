@@ -296,6 +296,9 @@ function bindEvents() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 function initialize() {
+  // Ping backend on page load to wake it up early (fixes Railway cold start)
+  fetch(`${API_BASE_URL}/actuator/health`).catch(() => {});
+
   const saved = localStorage.getItem('cb-theme');
   if (saved) applyTheme(saved);
   updateKeyStatus();
