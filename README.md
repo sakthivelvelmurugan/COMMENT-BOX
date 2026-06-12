@@ -21,13 +21,13 @@ Submit raw code → get back clean, well-documented code. That's it.
 ## 🚀 Features
 
 - 🤖 **LLM-Powered** — Uses OpenRouter (GPT-4o-mini) for intelligent comment generation
-- 🔑 **BYOK Support** — Users can supply their own OpenRouter API key
+- 🔑 **BYOK Support** — Users can supply their own OpenRouter API key per request
 - 🌐 **Language Aware** — Supports Java, Python, C++, and more
 - 🎛️ **Configurable Style** — Choose `inline`, `block`, or `jsdoc` comment style
 - 📊 **Density Control** — `minimal`, `normal`, or `verbose` output
-- 📜 **History Tracking** — Stores comment sessions per user in PostgreSQL
+- ⚡ **Stateless API** — No persistent database required
 - 🐳 **Docker Ready** — Multi-stage Alpine build for lean containers
-- ⚡ **Railway Deployed** — Live and accessible via Railway
+- 🚀 **Cloud Deployable** — Ready for Railway and Vercel
 
 ---
 
@@ -38,8 +38,6 @@ Submit raw code → get back clean, well-documented code. That's it.
 | Language | Java 17 |
 | Framework | Spring Boot 3.2.7 |
 | HTTP Client | Spring WebFlux (WebClient) |
-| Database (dev) | H2 (in-memory) |
-| Database (prod) | PostgreSQL |
 | LLM Provider | OpenRouter API |
 | Build Tool | Maven |
 | Containerization | Docker (Alpine JRE) |
@@ -69,7 +67,6 @@ commentbox-api/
 │       └── resources/
 │           ├── application.properties           # Local config
 │           ├── application-prod.properties      # Production config
-│           ├── schema.sql                       # DB schema
 │           └── static/                          # Frontend assets
 ├── Dockerfile
 ├── railway.toml
@@ -152,8 +149,7 @@ Generate commented code from raw source input.
   "language": "java",
   "generatesRemaining": 9,
   "byokActive": false,
-  "provider": "openai/gpt-4o-mini",
-  "historyId": "abc123"
+  "provider": "openrouter"
 }
 ```
 
@@ -171,7 +167,6 @@ docker build -t commentbox-api .
 
 ```bash
 docker run --rm -p 8085:8085 \
-  -e JWT_SECRET="${JWT_SECRET}" \
   -e OPENROUTER_API_KEY="${OPENROUTER_API_KEY}" \
   -e SPRING_PROFILES_ACTIVE=prod \
   commentbox-api
@@ -201,13 +196,8 @@ vercel
 
 | Variable | Required | Description |
 |---|---|---|
-| `OPENROUTER_API_KEY` | ✅ | Platform LLM API key |
-| `JWT_SECRET` | ✅ | Secret for JWT signing |
-| `SPRING_PROFILES_ACTIVE` | ✅ | Set to `prod` in production |
-| `CORS_ALLOWED_ORIGINS` | ⚠️ | Allowed frontend origins |
-| `SPRING_DATASOURCE_URL` | ⚠️ | PostgreSQL connection URL (prod) |
-| `SPRING_DATASOURCE_USERNAME` | ⚠️ | DB username (prod) |
-| `SPRING_DATASOURCE_PASSWORD` | ⚠️ | DB password (prod) |
+| `OPENROUTER_API_KEY` | ❌ | Optional backend OpenRouter API key if no `apiKey` is provided per request |
+| `SPRING_PROFILES_ACTIVE` | ⚠️ | Set to `prod` in production if you want production configuration |
 
 ---
 
@@ -230,15 +220,6 @@ Run through it after every deployment to verify the service is healthy.
 
 ---
 
-## 🗄️ Database Schema
-
-Three core tables power the backend:
-
-| Table | Purpose |
-|---|---|
-| `users` | Accounts, roles, daily usage counters |
-| `user_api_keys` | Encrypted BYOK keys per user |
-| `comment_history` | Input/output code, language, sharing metadata |
 
 ---
 
