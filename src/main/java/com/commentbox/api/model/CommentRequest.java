@@ -1,5 +1,5 @@
 package com.commentbox.api.model;
-
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
